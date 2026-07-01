@@ -1,17 +1,10 @@
-// auth.js
-
 document.addEventListener("DOMContentLoaded", () => {
 
     const email = document.getElementById("email");
     const senha = document.getElementById("senha");
-    const entrar = document.getElementById("btnEntrar");
+    const entrar = document.getElementById("entrar");
 
     entrar.addEventListener("click", async () => {
-
-        if (!email.value || !senha.value) {
-            alert("Informe e-mail e senha.");
-            return;
-        }
 
         try {
 
@@ -28,24 +21,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 .get();
 
             if (!doc.exists) {
-                alert("Usuário não encontrado no Firestore.");
-                await firebase.auth().signOut();
+                alert("Usuário não existe no Firestore.");
                 return;
             }
 
             const dados = doc.data();
 
-            if (dados.tipo !== "admin") {
-                alert("Acesso permitido apenas para administradores.");
-                await firebase.auth().signOut();
-                return;
+            if (dados.tipo === "admin") {
+
+                window.location = "admin/index.html";
+
+            } else {
+
+                window.location = "app/index.html";
+
             }
 
-            location.href = "admin/index.html";
-
         } catch (e) {
+
             console.error(e);
             alert(e.message);
+
         }
 
     });
