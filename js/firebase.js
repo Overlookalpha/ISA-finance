@@ -22,3 +22,4 @@ const db = firebase.firestore();
 const timestamp = firebase.firestore.FieldValue.serverTimestamp;
 
 console.log("✅ Firebase conectado!");
+console.log(firebaseConfig);
