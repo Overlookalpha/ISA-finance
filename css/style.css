@@ -1,77 +1,94 @@
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,Helvetica,sans-serif;
 }
 
 body{
-    background:#f4f6f9;
-    color:#333;
-    padding:20px;
+
+background:#edf2f7;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+height:100vh;
+
 }
 
-header{
-    background:#0F766E;
-    color:white;
-    padding:20px;
-    border-radius:12px;
-    margin-bottom:20px;
+.login{
+
+background:white;
+
+width:400px;
+
+padding:40px;
+
+border-radius:15px;
+
+box-shadow:0 10px 30px rgba(0,0,0,.15);
+
+text-align:center;
+
 }
 
-h1{
-    font-size:30px;
+.login h1{
+
+color:#0F766E;
+
+margin-bottom:10px;
+
 }
 
-h2{
-    margin-bottom:15px;
+.login p{
+
+margin-bottom:30px;
+
+color:#666;
+
 }
 
-.card{
-    background:white;
-    border-radius:12px;
-    padding:20px;
-    margin-bottom:15px;
-    box-shadow:0 3px 10px rgba(0,0,0,.1);
-}
+input{
 
-.card h3{
-    color:#666;
-    font-size:16px;
-    margin-bottom:8px;
-}
+width:100%;
 
-.card h1{
-    color:#0F766E;
-    font-size:32px;
-}
+padding:15px;
 
-input,
-textarea{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    margin-bottom:10px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    font-size:16px;
+margin-bottom:15px;
+
+border-radius:8px;
+
+border:1px solid #ddd;
+
+font-size:16px;
+
 }
 
 button{
-    width:100%;
-    padding:15px;
-    background:#0F766E;
-    color:white;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-    cursor:pointer;
+
+width:100%;
+
+padding:15px;
+
+background:#0F766E;
+
+color:white;
+
+border:none;
+
+border-radius:8px;
+
+font-size:17px;
+
+cursor:pointer;
+
 }
 
 button:hover{
-    background:#0d5f59;
-}
 
-hr{
-    margin:25px 0;
+background:#0b5b56;
+
 }
