@@ -1,33 +1,53 @@
-// ===============================
-// Login ISA Finance
-// ===============================
+// auth.js
 
-document.getElementById("entrar").addEventListener("click", async () => { 
+document.addEventListener("DOMContentLoaded", () => {
 
-    const email = document.getElementById("email").value.trim();
-    const senha = document.getElementById("senha").value;
+    const email = document.getElementById("email");
+    const senha = document.getElementById("senha");
+    const entrar = document.getElementById("btnEntrar");
 
-    if (!email || !senha) {
-        alert("Informe e-mail e senha.");
-        return;
-    }
+    entrar.addEventListener("click", async () => {
 
-   try {
+        if (!email.value || !senha.value) {
+            alert("Informe e-mail e senha.");
+            return;
+        }
 
-    await auth.signInWithEmailAndPassword(email, senha);
+        try {
 
-    if (email === "admin@isafinance.com") {
-        window.location.href = "dashboard-admin.html";
-    } else {
-        window.location.href = "dashboard-usuario.html";
-    }
+            const cred = await firebase.auth().signInWithEmailAndPassword(
+                email.value.trim(),
+                senha.value
+            );
 
-} catch (erro) {
-    console.error(erro);
-    alert(JSON.stringify({
-  code: erro.code,
-  message: erro.message
-}));
-}
+            console.log("Login realizado:", cred.user.uid);
+
+            const doc = await firebase.firestore()
+                .collection("usuarios")
+                .doc(cred.user.uid)
+                .get();
+
+            if (!doc.exists) {
+                alert("Usuário não encontrado no Firestore.");
+                await firebase.auth().signOut();
+                return;
+            }
+
+            const dados = doc.data();
+
+            if (dados.tipo !== "admin") {
+                alert("Acesso permitido apenas para administradores.");
+                await firebase.auth().signOut();
+                return;
+            }
+
+            location.href = "admin/index.html";
+
+        } catch (e) {
+            console.error(e);
+            alert(e.message);
+        }
+
+    });
 
 });
