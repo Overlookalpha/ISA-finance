@@ -26,12 +26,9 @@ document.getElementById("entrar").addEventListener("click", async () => {
 
         }
 
-    } catch (erro) {
-
-        alert("E-mail ou senha inválidos.");
-
-        console.error(erro);
-
-    }
+   catch (erro) {
+    console.error(erro);
+    alert(erro.code + " - " + erro.message);
+}
 
 });
