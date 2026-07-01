@@ -1,6 +1,9 @@
-// Configuração do Firebase
+// ===============================
+// Firebase ISA Finance
+// ===============================
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAPnVm1JeoV6-XElOq5zfIscl3RerWVtmk",
+    apiKey: "AIzaSyAPnVm1JeoV6-XELOq5zfIscl3RerWVtmk",
     authDomain: "isa-finance.firebaseapp.com",
     projectId: "isa-finance",
     storageBucket: "isa-finance.firebasestorage.app",
@@ -14,3 +17,8 @@ firebase.initializeApp(firebaseConfig);
 // Serviços
 const auth = firebase.auth();
 const db = firebase.firestore();
+
+// Timestamp do servidor
+const timestamp = firebase.firestore.FieldValue.serverTimestamp;
+
+console.log("✅ Firebase conectado!");
