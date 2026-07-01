@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISA Finance - Admin</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<header>
+    <h1>ISA Finance</h1>
+    <h3>Painel Administrativo</h3>
+</header>
+
+<main>
+
+<section>
+
+<h2>Resumo</h2>
+
+<div class="card">
+    <h3>Total de Entradas</h3>
+    <h1 id="totalEntradas">€0,00</h1>
+</div>
+
+<div class="card">
+    <h3>Empresa</h3>
+    <h1 id="saldoEmpresa">€0,00</h1>
+</div>
+
+<div class="card">
+    <h3>Isaías</h3>
+    <h1 id="saldoIsaias">€0,00</h1>
+</div>
+
+<div class="card">
+    <h3>Evelyn</h3>
+    <h1 id="saldoEvelyn">€0,00</h1>
+</div>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Nova Entrada</h2>
+
+<input
+type="number"
+id="valorEntrada"
+placeholder="Valor da entrada">
+
+<br><br>
+
+<textarea
+id="observacao"
+placeholder="Observação"></textarea>
+
+<br><br>
+
+<button id="salvarEntrada">
+Adicionar Entrada
+</button>
+
+</section>
+
+<hr>
+
+<section>
+
+<h2>Solicitações de Saque</h2>
+
+<div id="listaSaques">
+
+Nenhuma solicitação.
+
+</div>
+
+</section>
+
+</main>
+
+<script src="js/firebase.js"></script>
+<script src="js/admin.js"></script>
+
+</body>
+</html>
