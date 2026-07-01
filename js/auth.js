@@ -2,7 +2,7 @@
 // Login ISA Finance
 // ===============================
 
-document.getElementById("entrar").addEventListener("click", async () => {
+document.getElementById("entrar").addEventListener("click", async () => { 
 
     const email = document.getElementById("email").value.trim();
     const senha = document.getElementById("senha").value;
