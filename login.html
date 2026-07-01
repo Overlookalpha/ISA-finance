@@ -1,26 +1,50 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ISA Finance - Login</title>
+
+<title>ISA Finance</title>
+
+<link rel="stylesheet" href="css/style.css">
+
 </head>
 
 <body>
 
-<h1>ISA Finance</h1>
+<div class="login">
 
-<h2>Entrar</h2>
+    <h1>ISA Finance</h1>
 
-<input type="email" id="email" placeholder="E-mail">
+    <p>Sistema Inteligente de Gestão Patrimonial</p>
 
-<br><br>
+    <input
+        type="email"
+        id="email"
+        placeholder="E-mail">
 
-<input type="password" id="senha" placeholder="Senha">
+    <input
+        type="password"
+        id="senha"
+        placeholder="Senha">
 
-<br><br>
+    <button id="entrar">
 
-<button id="entrar">Entrar</button>
+        Entrar
+
+    </button>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
 
 </body>
+
 </html>
