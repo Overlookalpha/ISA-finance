@@ -12,23 +12,22 @@ document.getElementById("entrar").addEventListener("click", async () => {
         return;
     }
 
-    try {
+   try {
 
-        await auth.signInWithEmailAndPassword(email, senha);
+    await auth.signInWithEmailAndPassword(email, senha);
 
-        if (email === "admin@isafinance.com") {
+    if (email === "admin@isafinance.com") {
+        window.location.href = "dashboard-admin.html";
+    } else {
+        window.location.href = "dashboard-usuario.html";
+    }
 
-            window.location.href = "dashboard-admin.html";
-
-        } else {
-
-            window.location.href = "dashboard-usuario.html";
-
-        }
-
-   catch (erro) {
+} catch (erro) {
     console.error(erro);
-    alert(erro.code + " - " + erro.message);
+    alert(JSON.stringify({
+  code: erro.code,
+  message: erro.message
+}));
 }
 
 });
