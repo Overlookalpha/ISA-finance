@@ -2,7 +2,7 @@
 // ISA Finance - Usuário
 // ======================================
 
-import { auth, db } from "./firebase.js";
+import { auth, db } from "./firebase.js";  
 
 import { verificarLogin, sair } from "./auth.js";
 
