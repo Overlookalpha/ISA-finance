@@ -1,1 +1,128 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ISA Finance - Administração</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<header class="topo">
+
+    <h1>💰 ISA Finance</h1>
+
+    <button onclick="sair()">
+        Sair
+    </button>
+
+</header>
+
+<main class="container">
+
+    <section class="cards">
+
+        <div class="card">
+            <h3>Total de Entradas</h3>
+            <h2 id="totalEntradas">€ 0,00</h2>
+        </div>
+
+        <div class="card">
+            <h3>Empresa</h3>
+            <h2 id="empresa">€ 0,00</h2>
+        </div>
+
+        <div class="card">
+            <h3>Isaías</h3>
+            <h2 id="isaias">€ 0,00</h2>
+        </div>
+
+        <div class="card">
+            <h3>Evelyn</h3>
+            <h2 id="evelyn">€ 0,00</h2>
+        </div>
+
+    </section>
+
+    <section class="novaEntrada">
+
+        <h2>Nova Entrada</h2>
+
+        <input
+            type="number"
+            id="valor"
+            placeholder="Valor (€)"
+        >
+
+        <input
+            type="text"
+            id="descricao"
+            placeholder="Descrição"
+        >
+
+        <button id="salvarEntrada">
+
+            Salvar Entrada
+
+        </button>
+
+    </section>
+
+    <section class="historico">
+
+        <h2>Histórico</h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Data</th>
+
+                    <th>Descrição</th>
+
+                    <th>Valor</th>
+
+                    <th>Empresa</th>
+
+                    <th>Isaías</th>
+
+                    <th>Evelyn</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="listaEntradas">
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+</main>
+
+ <script type="module">
+
+import { verificarLogin, sair } from "./js/auth.js";
+
+window.sair = sair;
+
+verificarLogin();
+
+</script>
+
+<script type="module" src="js/admin.js"></script>
+
+</body>
+
+</html> 
