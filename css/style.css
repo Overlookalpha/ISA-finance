@@ -163,6 +163,40 @@ tbody tr:hover{
     background:#263445;
 }
 
+.logo{
+    display:flex;
+    flex-direction:column;
+}
+
+.logo span{
+    color:#cbd5e1;
+    font-size:14px;
+    margin-top:4px;
+}
+
+.acoesTopo{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.acoesTopo select{
+    width:180px;
+    height:42px;
+    border:none;
+    border-radius:8px;
+    background:#334155;
+    color:#fff;
+    padding:0 12px;
+    font-size:15px;
+}
+
+.acoesTopo button{
+    width:120px;
+    height:42px;
+    padding:0;
+}
+
 @media(max-width:700px){
 
     .topo{
