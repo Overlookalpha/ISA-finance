@@ -207,6 +207,53 @@ const faltaSeparar = Math.max(
 faltaSepararTotal.innerHTML = moeda(faltaSeparar);
    
 }
+
+btnAdicionarFundo.addEventListener("click", async () => {
+
+    const valor = Number(txtValorFundo.value);
+
+    if (valor <= 0) {
+        alert("Informe um valor válido.");
+        return;
+    }
+
+    const config = await carregarConfiguracoes();
+
+    const novoFundo = (config.fundoSeparado || 0) + valor;
+
+    await updateDoc(doc(db, "configuracoes", "geral"), {
+        fundoSeparado: novoFundo
+    });
+
+    // Divide o fundo igualmente
+    const saldoCada = novoFundo / 2;
+
+    // Atualiza Isaías
+    await updateDoc(
+        doc(db, "usuarios", config.uidIsaias),
+        {
+            fundoSeparado: novoFundo,
+            saldoDisponivel: saldoCada
+        }
+    );
+
+    // Atualiza Evelyn
+    await updateDoc(
+        doc(db, "usuarios", config.uidEvellyn),
+        {
+            fundoSeparado: novoFundo,
+            saldoDisponivel: saldoCada
+        }
+    );
+
+    txtValorFundo.value = "";
+
+    await carregarPainel();
+
+    alert("Fundo atualizado com sucesso!");
+
+});
+
 carregarPainel();
 
 btnAdicionarFundo.addEventListener("click", async () => {
