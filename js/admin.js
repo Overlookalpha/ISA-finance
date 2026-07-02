@@ -125,6 +125,22 @@ btnSalvar.addEventListener("click", async () => {
 
         });
 
+        await updateDoc(
+    doc(db, "usuarios", config.uidIsaias),
+    {
+        saldoDisponivel: increment(valorUsuario),
+        totalReceber: increment(valorUsuario)
+    }
+);
+
+await updateDoc(
+    doc(db, "usuarios", config.uidEvellyn),
+    {
+        saldoDisponivel: increment(valorUsuario),
+        totalReceber: increment(valorUsuario)
+    }
+);
+        
         txtValor.value = "";
         txtDescricao.value = "";
 
