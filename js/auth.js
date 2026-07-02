@@ -1,8 +1,8 @@
-// ===============================
+// ======================================
 // ISA Finance - Autenticação
-// ===============================
+// ======================================
 
-import { auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
     signInWithEmailAndPassword,
@@ -10,9 +10,14 @@ import {
     signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// ===============================
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ===========================
 // LOGIN
-// ===============================
+// ===========================
 
 const btnEntrar = document.getElementById("entrar");
 
@@ -30,29 +35,41 @@ if (btnEntrar) {
 
         try {
 
-            const credencial = await signInWithEmailAndPassword(
-                auth,
-                email,
-                senha
-            );
+            const credencial = await signInWithEmailAndPassword(auth, email, senha);
 
-            const usuario = credencial.user;
+            const uid = credencial.user.uid;
 
-            // ADMIN
-            if (usuario.email === "admin@isafinance.com") {
+            const usuarioRef = doc(db, "usuarios", uid);
 
-                window.location.href = "admin.html";
+            const usuarioSnap = await getDoc(usuarioRef);
+
+            if (!usuarioSnap.exists()) {
+
+                alert("Usuário não encontrado.");
+
+                await signOut(auth);
+
                 return;
 
             }
 
-            // USUÁRIOS
-            window.location.href = "usuario.html";
+            const usuario = usuarioSnap.data();
+
+            if (usuario.tipo === "admin") {
+
+                window.location.href = "admin.html";
+
+            } else {
+
+                window.location.href = "usuario.html";
+
+            }
 
         } catch (erro) {
 
-            alert("E-mail ou senha inválidos.");
             console.error(erro);
+
+            alert("E-mail ou senha inválidos.");
 
         }
 
@@ -60,15 +77,15 @@ if (btnEntrar) {
 
 }
 
-// ===============================
-// VERIFICA LOGIN
-// ===============================
+// ===========================
+// Verificar Login
+// ===========================
 
 export function verificarLogin() {
 
-    onAuthStateChanged(auth, (usuario) => {
+    onAuthStateChanged(auth, (user) => {
 
-        if (!usuario) {
+        if (!user) {
 
             window.location.href = "login.html";
 
@@ -78,9 +95,9 @@ export function verificarLogin() {
 
 }
 
-// ===============================
-// LOGOUT
-// ===============================
+// ===========================
+// Logout
+// ===========================
 
 export async function sair() {
 
