@@ -69,20 +69,12 @@ async function carregar(){
 
     // Saldo
 
-    let saldo = 0;
-
-    if(user.email === "isa@isafinance.com"){
-        saldo = config.saldoIsaias || 0;
-    }else{
-        saldo = config.saldoEvelyn || 0;
-    }
-
     // Valores
 
    const totalGerado = config.totalEntradas || 0;
 
 const fundoSeparado = usuario.fundoSeparado || 0;
-
+const saldo = fundoSeparado / 2;
 // Valor de cada sócio
 const valorIndividual = totalGerado * (percentualAtual / 100);
 
@@ -93,7 +85,7 @@ const fundoNecessario = valorIndividual * 2;
 const faltaSeparar = Math.max(0, fundoNecessario - fundoSeparado);
 
 // Disponível para saque de cada sócio
-const saldo = fundoSeparado / 2;
+
 
     const totalSacado = usuario.totalSacado || 0;
 
