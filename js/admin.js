@@ -37,6 +37,8 @@ const isaias = document.getElementById("isaias");
 
 const evelyn = document.getElementById("evelyn");
 
+const fundoSeparadoTotal = document.getElementById("fundoSeparadoTotal");
+
 const listaEntradas = document.getElementById("listaEntradas");
 
 // =============================
@@ -181,5 +183,7 @@ async function carregarPainel(){
 
     evelyn.innerHTML = moeda(config.saldoEvelyn || 0);
 
+    fundoSeparadoTotal.innerHTML = moeda(config.fundoSeparado || 0);
+    
 }
 carregarPainel();
