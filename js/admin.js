@@ -208,3 +208,36 @@ faltaSepararTotal.innerHTML = moeda(faltaSeparar);
    
 }
 carregarPainel();
+
+btnAdicionarFundo.addEventListener("click", async () => {
+
+    const valor = Number(txtValorFundo.value);
+
+    if (!valor || valor <= 0) {
+        alert("Informe um valor válido.");
+        return;
+    }
+
+    try {
+
+        await updateDoc(
+            doc(db, "configuracoes", "geral"),
+            {
+                fundoSeparado: increment(valor)
+            }
+        );
+
+        txtValorFundo.value = "";
+
+        await carregarPainel();
+
+        alert("Valor adicionado ao Fundo Separado!");
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        alert("Erro ao adicionar ao Fundo.");
+    }
+
+});
