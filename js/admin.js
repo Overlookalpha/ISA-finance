@@ -83,7 +83,7 @@ btnSalvar.addEventListener("click", async () => {
 
     const descricao = txtDescricao.value.trim();
 
-const fundoSeparado = Number(txtFundoSeparado.value) || 0;
+const fundoSeparado = 0;
     
     if (isNaN(valor) || valor <= 0) {
 
@@ -127,24 +127,21 @@ const fundoSeparado = Number(txtFundoSeparado.value) || 0;
 
         });
 
-        await updateDoc(doc(db, "configuracoes", "geral"), {
+       await updateDoc(doc(db, "configuracoes", "geral"), {
 
-            totalEntradas: (config.totalEntradas || 0) + valor,
+    totalEntradas: (config.totalEntradas || 0) + valor,
 
-            empresa: (config.empresa || 0) + valorEmpresa,
+    empresa: (config.empresa || 0) + valorEmpresa,
 
-            saldoIsaias: (config.saldoIsaias || 0) + valorUsuario,
+    saldoIsaias: (config.saldoIsaias || 0) + valorUsuario,
 
-            saldoEvelyn: (config.saldoEvelyn || 0) + valorUsuario,
+    saldoEvelyn: (config.saldoEvelyn || 0) + valorUsuario
 
-           fundoSeparado: (config.fundoSeparado || 0) + fundoSeparado
+});
 
-        });
-
-        await updateDoc(
+       await updateDoc(
     doc(db, "usuarios", config.uidIsaias),
     {
-        saldoDisponivel: increment(valorUsuario),
         totalReceber: increment(valorUsuario)
     }
 );
@@ -152,7 +149,6 @@ const fundoSeparado = Number(txtFundoSeparado.value) || 0;
 await updateDoc(
     doc(db, "usuarios", config.uidEvellyn),
     {
-        saldoDisponivel: increment(valorUsuario),
         totalReceber: increment(valorUsuario)
     }
 );
@@ -226,14 +222,14 @@ btnAdicionarFundo.addEventListener("click", async () => {
     });
 
     // Divide o fundo igualmente
-    const saldoCada = novoFundo / 2;
-
+    
+    const fundoCada = novoFundo / 2;
     // Atualiza Isaías
     await updateDoc(
         doc(db, "usuarios", config.uidIsaias),
         {
-            fundoSeparado: novoFundo,
-            saldoDisponivel: saldoCada
+            fundoSeparado: fundoCada,
+            saldoDisponivel: fundoCada
         }
     );
 
@@ -241,8 +237,8 @@ btnAdicionarFundo.addEventListener("click", async () => {
     await updateDoc(
         doc(db, "usuarios", config.uidEvellyn),
         {
-            fundoSeparado: novoFundo,
-            saldoDisponivel: saldoCada
+            fundoSeparado: fundoCada,
+            saldoDisponivel:fundoCada
         }
     );
 
@@ -256,35 +252,3 @@ btnAdicionarFundo.addEventListener("click", async () => {
 
 carregarPainel();
 
-btnAdicionarFundo.addEventListener("click", async () => {
-
-    const valor = Number(txtValorFundo.value);
-
-    if (!valor || valor <= 0) {
-        alert("Informe um valor válido.");
-        return;
-    }
-
-    try {
-
-        await updateDoc(
-            doc(db, "configuracoes", "geral"),
-            {
-                fundoSeparado: increment(valor)
-            }
-        );
-
-        txtValorFundo.value = "";
-
-        await carregarPainel();
-
-        alert("Valor adicionado ao Fundo Separado!");
-
-    } catch (erro) {
-
-        console.error(erro);
-
-        alert("Erro ao adicionar ao Fundo.");
-    }
-
-});
