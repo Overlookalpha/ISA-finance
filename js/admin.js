@@ -43,6 +43,10 @@ const faltaSepararTotal = document.getElementById("faltaSepararTotal");
 
 const listaEntradas = document.getElementById("listaEntradas");
 
+const txtValorFundo = document.getElementById("valorFundo");
+
+const btnAdicionarFundo = document.getElementById("btnAdicionarFundo");
+
 // =============================
 // FORMATA MOEDA
 // =============================
@@ -184,7 +188,7 @@ async function carregarPainel(){
     isaias.innerHTML = moeda(config.saldoIsaias || 0);
 
     evelyn.innerHTML = moeda(config.saldoEvelyn || 0);
-
+   
     fundoSeparadoTotal.innerHTML = moeda(config.fundoSeparado || 0);
 
    const percentual = (config.totalEntradas || 0) >= (config.limiteMudancaPercentual || 5000)
