@@ -139,17 +139,21 @@ const fundoSeparado = 0;
 
 });
 
-       await updateDoc(
+      // Atualiza Isaías
+await updateDoc(
     doc(db, "usuarios", config.uidIsaias),
     {
-        totalReceber: increment(valorUsuario)
+        fundoSeparado: fundoCada,
+        saldoDisponivel: fundoCada
     }
 );
 
+// Atualiza Evelyn
 await updateDoc(
     doc(db, "usuarios", config.uidEvellyn),
     {
-        totalReceber: increment(valorUsuario)
+        fundoSeparado: fundoCada,
+        saldoDisponivel: fundoCada
     }
 );
         
