@@ -1,21 +1,33 @@
-// firebase.js
+// ===============================
+// Firebase ISA Finance
+// ===============================
 
+// IMPORTS
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getFirestore
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+    getAuth
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// CONFIGURAÇÃO FIREBASE
 const firebaseConfig = {
-  apiKey: "AIzaSyAPnVm1JeoV6-XElOq5zfIscl3RerWVtmk",
+
+    apiKey: "AIzaSyAPnVm1JeoV6-XElOq5zfIscl3RerWVtmk",
   authDomain: "isa-finance.firebaseapp.com",
   projectId: "isa-finance",
   storageBucket: "isa-finance.firebasestorage.app",
   messagingSenderId: "384353293578",
   appId: "1:384353293578:web:a08279141bf50e5cba56f3"
+
 };
 
-// Inicializa apenas uma vez
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+// INICIALIZA
+const app = initializeApp(firebaseConfig);
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
-
-console.log("Firebase conectado!");
+// EXPORTA
+export const db = getFirestore(app);
+export const auth = getAuth(app);
