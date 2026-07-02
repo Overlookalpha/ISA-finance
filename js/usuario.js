@@ -43,6 +43,7 @@ async function carregar(){
         return;
     }
 
+    const config = configSnap.data();
     
     // Procura o usuário pelo e-mail
     const q = query(
