@@ -51,7 +51,7 @@ const percentual =
 totalGerado >= (config.limiteMudancaPercentual || 5000)
     ? (config.percentualAcima || 20)
     : (config.percentualNormal || 12);
-
+  
 const fundoSeparado = config.fundoSeparado || 0;
  
 const disponivel = totalGerado * (percentualAtual / 100);
