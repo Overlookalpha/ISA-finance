@@ -8,7 +8,7 @@ import { verificarLogin, sair } from "./auth.js";
     
 import {
     doc,
-    getDoc,
+    getDoc,   
     collection,
     query,
     where,
