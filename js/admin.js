@@ -154,7 +154,8 @@ await updateDoc(
        txtDescricao.value = "";
 
         alert("Entrada registrada com sucesso!");
-
+        await carregarPainel();
+        
     } catch (erro) {
 
         console.error(erro);
@@ -164,3 +165,21 @@ await updateDoc(
     }
 
 });
+// =============================
+// CARREGAR PAINEL
+// =============================
+
+async function carregarPainel(){
+
+    const config = await carregarConfiguracoes();
+
+    totalEntradas.innerHTML = moeda(config.totalEntradas || 0);
+
+    empresa.innerHTML = moeda(config.empresa || 0);
+
+    isaias.innerHTML = moeda(config.saldoIsaias || 0);
+
+    evelyn.innerHTML = moeda(config.saldoEvelyn || 0);
+
+}
+carregarPainel();
