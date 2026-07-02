@@ -74,7 +74,7 @@ async function carregar(){
    const totalGerado = config.totalEntradas || 0;
 
 const fundoSeparado = usuario.fundoSeparado || 0;
-const saldo = fundoSeparado / 2;
+const saldo = usuario.saldoDisponivel || 0;
 // Valor de cada sócio
 const valorIndividual = totalGerado * (percentualAtual / 100);
 
