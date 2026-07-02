@@ -1,1 +1,106 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ISA Finance - Usuário</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<header class="topo">
+
+<h1>💰 ISA Finance</h1>
+
+<button onclick="sair()">
+Sair
+</button>
+
+</header>
+
+<main class="container">
+
+<div class="cards">
+
+<div class="card">
+<h3>💰 Total Gerado</h3>
+<h2 id="totalGerado">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>🏦 Fundo Separado</h3>
+<h2 id="fundoSeparado">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>⏳ Falta Separar</h3>
+<h2 id="faltaSeparar">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>💳 Disponível para Saque</h3>
+<h2 id="saldoDisponivel">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>💸 Total Sacado</h3>
+<h2 id="totalSacado">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>📊 Percentual Atual</h3>
+<h2 id="percentualAtual">12%</h2>
+</div>
+
+</div>
+
+<section class="historico">
+
+<h2>📜 Histórico de Saques</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Data</th>
+<th>Valor</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="listaSaques">
+
+</tbody>
+
+</table>
+
+</section>
+
+<div style="margin-top:30px;text-align:center;">
+
+<button id="btnSolicitarSaque">
+
+💸 Solicitar Saque
+
+</button>
+
+</div>
+
+</main>
+
+<script type="module" src="js/usuario.js"></script>
+
+</body>
+
+</html>
