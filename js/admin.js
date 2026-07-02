@@ -39,6 +39,8 @@ const evelyn = document.getElementById("evelyn");
 
 const fundoSeparadoTotal = document.getElementById("fundoSeparadoTotal");
 
+const faltaSepararTotal = document.getElementById("faltaSepararTotal");
+
 const listaEntradas = document.getElementById("listaEntradas");
 
 // =============================
@@ -184,6 +186,21 @@ async function carregarPainel(){
     evelyn.innerHTML = moeda(config.saldoEvelyn || 0);
 
     fundoSeparadoTotal.innerHTML = moeda(config.fundoSeparado || 0);
-    
+
+   const percentual = (config.totalEntradas || 0) >= (config.limiteMudancaPercentual || 5000)
+    ? (config.percentualAcima || 20)
+    : (config.percentualNormal || 12);
+
+const valorCadaSocio = (config.totalEntradas || 0) * (percentual / 100);
+
+const fundoNecessario = valorCadaSocio * 2;
+
+const faltaSeparar = Math.max(
+    0,
+    fundoNecessario - (config.fundoSeparado || 0)
+);
+
+faltaSepararTotal.innerHTML = moeda(faltaSeparar);
+   
 }
 carregarPainel();
