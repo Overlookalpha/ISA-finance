@@ -45,6 +45,29 @@ async function carregar(){
 
     const config = configSnap.data();
 
+    const totalGerado = config.totalEntradas || 0;
+
+const percentual =
+totalGerado >= (config.limiteMudancaPercentual || 5000)
+    ? (config.percentualAcima || 20)
+    : (config.percentualNormal || 12);
+
+const fundoSeparado = config.fundoSeparado || 0;
+
+const disponivel = totalGerado * (percentual / 100);
+
+const faltaSeparar = Math.max(0, disponivel - fundoSeparado);
+
+document.getElementById("totalGerado").innerHTML = moeda(totalGerado);
+
+document.getElementById("fundoSeparado").innerHTML = moeda(fundoSeparado);
+
+document.getElementById("faltaSeparar").innerHTML = moeda(faltaSeparar);
+
+document.getElementById("saldoDisponivel").innerHTML = moeda(disponivel);
+
+document.getElementById("percentualAtual").innerHTML = percentual + "%";
+    
     // Procura o usuário pelo e-mail
     const q = query(
         collection(db,"usuarios"),
