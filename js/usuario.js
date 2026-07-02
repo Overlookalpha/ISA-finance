@@ -54,7 +54,7 @@ totalGerado >= (config.limiteMudancaPercentual || 5000)
 
 const fundoSeparado = config.fundoSeparado || 0;
 
-const disponivel = totalGerado * (percentual / 100);
+const disponivel = totalGerado * (percentualAtual / 100);
 
 const faltaSeparar = Math.max(0, disponivel - fundoSeparado);
 
@@ -66,7 +66,7 @@ document.getElementById("faltaSeparar").innerHTML = moeda(faltaSeparar);
 
 document.getElementById("saldoDisponivel").innerHTML = moeda(disponivel);
 
-document.getElementById("percentualAtual").innerHTML = percentual + "%";
+document.getElementById("percentualAtual").innerHTML = percentualAtual + "%";
     
     // Procura o usuário pelo e-mail
     const q = query(
@@ -85,7 +85,7 @@ document.getElementById("percentualAtual").innerHTML = percentual + "%";
 
     // Percentual
 
-    const percentual =
+    const percentualAtual =
         config.totalEntradas >= config.limiteMudancaPercentual
         ? config.percentualAcima
         : config.percentualNormal;
