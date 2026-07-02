@@ -27,6 +27,8 @@ const txtValor = document.getElementById("valor");
 
 const txtDescricao = document.getElementById("descricao");
 
+const txtFundoSeparado = document.getElementById("fundoSeparado");
+
 const totalEntradas = document.getElementById("totalEntradas");
 
 const empresa = document.getElementById("empresa");
@@ -73,6 +75,8 @@ btnSalvar.addEventListener("click", async () => {
 
     const descricao = txtDescricao.value.trim();
 
+const fundoSeparado = Number(txtFundoSeparado.value) || 0;
+    
     if (isNaN(valor) || valor <= 0) {
 
         alert("Informe um valor válido.");
@@ -101,7 +105,9 @@ btnSalvar.addEventListener("click", async () => {
 
             descricao: descricao,
 
-            percentual: percentual,
+           fundoSeparado: fundoSeparado,
+
+           percentual: percentual,
 
             empresa: valorEmpresa,
 
@@ -121,7 +127,9 @@ btnSalvar.addEventListener("click", async () => {
 
             saldoIsaias: (config.saldoIsaias || 0) + valorUsuario,
 
-            saldoEvelyn: (config.saldoEvelyn || 0) + valorUsuario
+            saldoEvelyn: (config.saldoEvelyn || 0) + valorUsuario,
+
+           fundoSeparado: (config.fundoSeparado || 0) + fundoSeparado
 
         });
 
@@ -141,8 +149,9 @@ await updateDoc(
     }
 );
         
-        txtValor.value = "";
-        txtDescricao.value = "";
+       txtValor.value = "";
+       txtFundoSeparado.value = "0";
+       txtDescricao.value = "";
 
         alert("Entrada registrada com sucesso!");
 
