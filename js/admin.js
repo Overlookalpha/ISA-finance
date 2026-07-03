@@ -149,7 +149,7 @@ const fundoSeparado = 0;
        console.log(txtFundoSeparado);
        console.log(txtDescricao);
        txtValor.value = "";
-       txtFundoSeparado.value = "0";
+       // txtFundoSeparado.value = "0";
        txtDescricao.value = "";
 
         alert("Entrada registrada com sucesso!");
