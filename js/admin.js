@@ -170,13 +170,45 @@ async function carregarPainel(){
 
     const config = await carregarConfiguracoes();
 
-    totalEntradas.innerHTML = moeda(config.totalEntradas || 0);
+    const [ano, mes] = mesReferencia.value.split("-");
 
-    empresa.innerHTML = moeda(config.empresa || 0);
+const inicio = Timestamp.fromDate(
+    new Date(Number(ano), Number(mes) - 1, 1)
+);
 
-    isaias.innerHTML = moeda(config.saldoIsaias || 0);
+const fim = Timestamp.fromDate(
+    new Date(Number(ano), Number(mes), 1)
+);
 
-    evelyn.innerHTML = moeda(config.saldoEvelyn || 0);
+const q = query(
+    collection(db, "movimentacoes"),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+);
+
+const snap = await getDocs(q);
+
+let totalMes = 0;
+let empresaMes = 0;
+let isaiasMes = 0;
+let evelynMes = 0;
+
+snap.forEach((docMov) => {
+    const m = docMov.data();
+
+    totalMes += m.valor || 0;
+    empresaMes += m.empresa || 0;
+    isaiasMes += m.isaias || 0;
+    evelynMes += m.evelyn || 0;
+});
+      
+    totalEntradas.innerHTML = moeda(totalMes);
+
+empresa.innerHTML = moeda(empresaMes);
+
+isaias.innerHTML = moeda(isaiasMes);
+
+evelyn.innerHTML = moeda(evelynMes);
    
     fundoSeparadoTotal.innerHTML = moeda(config.fundoSeparado || 0);
 
