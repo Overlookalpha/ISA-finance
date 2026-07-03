@@ -5,12 +5,12 @@
 import { db } from "./firebase.js";
       
 import {
-    collection,   
+    collection,
     addDoc,
     getDoc,
+    getDocs,
     doc,
     updateDoc,
-    increment,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { verificarLogin } from "./auth.js";
@@ -191,7 +191,34 @@ const faltaSeparar = Math.max(
 );
 
 faltaSepararTotal.innerHTML = moeda(faltaSeparar);
-   
+
+ await carregarHistorico();     
+      
+}
+
+async function carregarHistorico() {
+
+    listaEntradas.innerHTML = "";
+
+    const snap = await getDocs(collection(db, "movimentacoes"));
+
+    snap.forEach((docMov) => {
+
+        const m = docMov.data();
+
+        listaEntradas.innerHTML += `
+            <tr>
+                <td>-</td>
+                <td>${m.descricao || ""}</td>
+                <td>${moeda(m.valor || 0)}</td>
+                <td>${moeda(m.empresa || 0)}</td>
+                <td>${moeda(m.isaias || 0)}</td>
+                <td>${moeda(m.evelyn || 0)}</td>
+            </tr>
+        `;
+
+    });
+
 }
 
 btnAdicionarFundo.addEventListener("click", async () => {
@@ -226,3 +253,7 @@ mesReferencia.value =
     `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 
 carregarPainel();
+
+mesReferencia.addEventListener("change", () => {
+    carregarPainel();
+});
