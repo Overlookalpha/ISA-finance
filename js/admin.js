@@ -101,7 +101,8 @@ const fundoSeparado = 0;
     try {
 
         const config = await carregarConfiguracoes();
-
+        console.log("Config totalEntradas:", config.totalEntradas);
+          
         const percentual = config.totalEntradas >= config.limiteMudancaPercentual
             ? config.percentualAcima
             : config.percentualNormal;
@@ -205,7 +206,7 @@ snap.forEach((docMov) => {
     evelynMes += m.evelyn || 0;
     fundoMes += m.fundoSeparado || 0;
 });
-      
+    console.log("Total do mês:", totalMes);  
     totalEntradas.innerHTML = moeda(totalMes);
 
 empresa.innerHTML = moeda(empresaMes);
