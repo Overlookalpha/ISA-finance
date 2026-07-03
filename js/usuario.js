@@ -44,7 +44,8 @@ async function carregar(){
     }
 
     const config = configSnap.data();
-    console.log(config);
+   console.log("totalEntradas =", config.totalEntradas);
+   console.log("config =", config);
     
     // Procura o usuário pelo e-mail
     const q = query(
