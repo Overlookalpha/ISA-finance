@@ -192,7 +192,8 @@ let totalMes = 0;
 let empresaMes = 0;
 let isaiasMes = 0;
 let evelynMes = 0;
-
+let fundoMes = 0;
+      
 snap.forEach((docMov) => {
     const m = docMov.data();
 
@@ -200,6 +201,7 @@ snap.forEach((docMov) => {
     empresaMes += m.empresa || 0;
     isaiasMes += m.isaias || 0;
     evelynMes += m.evelyn || 0;
+    fundoMes += m.fundoSeparado || 0;
 });
       
     totalEntradas.innerHTML = moeda(totalMes);
@@ -210,24 +212,26 @@ isaias.innerHTML = moeda(isaiasMes);
 
 evelyn.innerHTML = moeda(evelynMes);
    
-    fundoSeparadoTotal.innerHTML = moeda(config.fundoSeparado || 0);
+  fundoSeparadoTotal.innerHTML = moeda(fundoMes);
 
-   const percentual = (config.totalEntradas || 0) >= (config.limiteMudancaPercentual || 5000)
-    ? (config.percentualAcima || 20)
-    : (config.percentualNormal || 12);
+const percentual =
+    totalMes >= (config.limiteMudancaPercentual || 5000)
+        ? (config.percentualAcima || 20)
+        : (config.percentualNormal || 12);
 
-const valorCadaSocio = (config.totalEntradas || 0) * (percentual / 100);
+const valorCadaSocio = totalMes * (percentual / 100);
 
 const fundoNecessario = valorCadaSocio * 2;
 
 const faltaSeparar = Math.max(
     0,
-    fundoNecessario - (config.fundoSeparado || 0)
+    fundoNecessario - fundoMes
 );
 
 faltaSepararTotal.innerHTML = moeda(faltaSeparar);
 
- await carregarHistorico();     
+await carregarHistorico();
+ 
       
 }
 
@@ -288,7 +292,25 @@ btnAdicionarFundo.addEventListener("click", async () => {
     const config = await carregarConfiguracoes();
 
     const novoFundo = (config.fundoSeparado || 0) + valor;
+    await addDoc(collection(db, "movimentacoes"), {
 
+    tipo: "fundo",
+
+    descricao: "Fundo Separado",
+
+    valor: 0,
+
+    empresa: 0,
+
+    isaias: 0,
+
+    evelyn: 0,
+
+    fundoSeparado: valor,
+
+    criadoEm: serverTimestamp()
+
+});
     await updateDoc(doc(db, "configuracoes", "geral"), {
         fundoSeparado: novoFundo
     });
