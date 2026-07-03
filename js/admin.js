@@ -139,23 +139,7 @@ const fundoSeparado = 0;
 
 });
 
-      // Atualiza Isaías
-await updateDoc(
-    doc(db, "usuarios", config.uidIsaias),
-    {
-        fundoSeparado: fundoCada,
-        saldoDisponivel: fundoCada
-    }
-);
-
-// Atualiza Evelyn
-await updateDoc(
-    doc(db, "usuarios", config.uidEvellyn),
-    {
-        fundoSeparado: fundoCada,
-        saldoDisponivel: fundoCada
-    }
-);
+    
         
        txtValor.value = "";
        txtFundoSeparado.value = "0";
@@ -225,27 +209,7 @@ btnAdicionarFundo.addEventListener("click", async () => {
         fundoSeparado: novoFundo
     });
 
-    // Divide o fundo igualmente
-    
-    const fundoCada = novoFundo / 2;
-    // Atualiza Isaías
-    await updateDoc(
-        doc(db, "usuarios", config.uidIsaias),
-        {
-            fundoSeparado: fundoCada,
-            saldoDisponivel: fundoCada
-        }
-    );
-
-    // Atualiza Evelyn
-    await updateDoc(
-        doc(db, "usuarios", config.uidEvellyn),
-        {
-            fundoSeparado: fundoCada,
-            saldoDisponivel:fundoCada
-        }
-    );
-
+   
     txtValorFundo.value = "";
 
     await carregarPainel();
