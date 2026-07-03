@@ -208,7 +208,11 @@ async function carregarHistorico() {
 
         listaEntradas.innerHTML += `
             <tr>
-                <td>-</td>
+                <td>${
+                 m.criadoEm
+               ? m.criadoEm.toDate().toLocaleDateString("pt-PT")
+               : "-"
+               }</td>
                 <td>${m.descricao || ""}</td>
                 <td>${moeda(m.valor || 0)}</td>
                 <td>${moeda(m.empresa || 0)}</td>
