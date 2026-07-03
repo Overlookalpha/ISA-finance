@@ -47,6 +47,8 @@ const txtValorFundo = document.getElementById("valorFundo");
 
 const btnAdicionarFundo = document.getElementById("btnAdicionarFundo");
 
+const mesReferencia = document.getElementById("mesReferencia");
+
 // =============================
 // FORMATA MOEDA
 // =============================
@@ -218,5 +220,9 @@ btnAdicionarFundo.addEventListener("click", async () => {
 
 });
 
-carregarPainel();
+const hoje = new Date();
 
+mesReferencia.value =
+    `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+
+carregarPainel();
