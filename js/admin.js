@@ -145,7 +145,9 @@ const fundoSeparado = 0;
 });
 
     
-        
+        console.log(txtValor);
+       console.log(txtFundoSeparado);
+       console.log(txtDescricao);
        txtValor.value = "";
        txtFundoSeparado.value = "0";
        txtDescricao.value = "";
