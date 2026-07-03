@@ -11,6 +11,9 @@ import {
     getDocs,
     doc,
     updateDoc,
+    query,
+    where,
+    Timestamp,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { verificarLogin } from "./auth.js";
@@ -200,7 +203,23 @@ async function carregarHistorico() {
 
     listaEntradas.innerHTML = "";
 
-    const snap = await getDocs(collection(db, "movimentacoes"));
+    const [ano, mes] = mesReferencia.value.split("-");
+
+const inicio = Timestamp.fromDate(
+    new Date(Number(ano), Number(mes) - 1, 1)
+);
+
+const fim = Timestamp.fromDate(
+    new Date(Number(ano), Number(mes), 1)
+);
+
+const q = query(
+    collection(db, "movimentacoes"),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+);
+
+const snap = await getDocs(q);
 
     snap.forEach((docMov) => {
 
