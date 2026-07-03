@@ -71,24 +71,25 @@ async function carregar(){
 
     // Valores
 
-   const totalGerado = config.totalEntradas || 0;
+  const totalGerado = config.totalEntradas || 0;
 
-const fundoSeparado = usuario.fundoSeparado || 0;
-const saldo = usuario.saldoDisponivel || 0;
-// Valor de cada sócio
+// Fundo separado controlado pelo ADMIN
+const fundoSeparado = config.fundoSeparado || 0;
+
+// Quanto pertence a cada sócio
 const valorIndividual = totalGerado * (percentualAtual / 100);
 
-// Total que deveria estar separado (Isaías + Evelyn)
+// Total que deveria existir no fundo
 const fundoNecessario = valorIndividual * 2;
 
 // Quanto ainda falta separar
 const faltaSeparar = Math.max(0, fundoNecessario - fundoSeparado);
 
-// Disponível para saque de cada sócio
+// Total já sacado pelo usuário
+const totalSacado = usuario.totalSacado || 0;
 
-
-    const totalSacado = usuario.totalSacado || 0;
-
+// Dinheiro disponível para este usuário
+const saldo = Math.max(0, (fundoSeparado / 2) - totalSacado);
     // Atualiza tela
 
     document.getElementById("totalGerado").innerHTML =
