@@ -8,7 +8,8 @@ import { verificarLogin, sair } from "./auth.js";
     
 import {
     doc,
-    getDoc,      
+    getDoc,
+    updateDoc,
     collection,
     query,
     where,
@@ -16,7 +17,6 @@ import {
     addDoc,
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 window.sair = sair;
 
 verificarLogin();
@@ -82,12 +82,20 @@ const faltaSeparar = Math.max(
     (config.saldoIsaias + config.saldoEvelyn) - fundoSeparado
 );
 
-const totalSacado = usuario.totalSacado || 0;
+let saldo = 0;
+let totalSacado = 0;
 
-const saldo = Math.max(
-    0,
-    (fundoSeparado / 2) - totalSacado
-);
+if (user.uid === config.uidIsaias) {
+
+    saldo = config.saldoDisponivelIsaias || 0;
+    totalSacado = config.totalSacadoIsaias || 0;
+
+} else if (user.uid === config.uidEvelyn) {
+
+    saldo = config.saldoDisponivelEvelyn || 0;
+    totalSacado = config.totalSacadoEvelyn || 0;
+
+}
     // Atualiza tela
 
     document.getElementById("totalGerado").innerHTML =
@@ -143,40 +151,51 @@ async function carregarHistorico(email){
 
 document
 .getElementById("btnSolicitarSaque")
-.addEventListener("click",async()=>{
+.addEventListener("click", async () => {
 
-    const valor = prompt("Valor do saque:");
+    const user = auth.currentUser;
 
-    if(!valor) return;
+    const configRef = doc(db, "configuracoes", "geral");
+    const configSnap = await getDoc(configRef);
+    const config = configSnap.data();
 
-    const numero = Number(valor);
+    let saldoDisponivel = 0;
+    let campoSaldo = "";
+    let campoSacado = "";
 
-    if(numero<=0){
-
-        alert("Valor inválido.");
-
-        return;
-
+    if (user.uid === config.uidIsaias) {
+        saldoDisponivel = config.saldoDisponivelIsaias || 0;
+        campoSaldo = "saldoDisponivelIsaias";
+        campoSacado = "totalSacadoIsaias";
+    } else {
+        saldoDisponivel = config.saldoDisponivelEvelyn || 0;
+        campoSaldo = "saldoDisponivelEvelyn";
+        campoSacado = "totalSacadoEvelyn";
     }
 
-    await addDoc(collection(db,"saques"),{
+    if (saldoDisponivel <= 0) {
+        alert("Você não possui saldo disponível para saque.");
+        return;
+    }
 
-        email:auth.currentUser.email,
-
-        valor:numero,
-
-        status:"Aguardando",
-
-        criadoEm:serverTimestamp()
-
+    await addDoc(collection(db, "saques"), {
+        email: user.email,
+        valor: saldoDisponivel,
+        status: "Pago",
+        criadoEm: serverTimestamp()
     });
 
-    alert("Solicitação enviada.");
+    await updateDoc(configRef, {
+        fundoSeparado: (config.fundoSeparado || 0) - saldoDisponivel,
+        [campoSaldo]: 0,
+        [campoSacado]: (config[campoSacado] || 0) + saldoDisponivel
+    });
+
+    alert("Saque realizado com sucesso!");
 
     carregar();
 
 });
-
 auth.onAuthStateChanged((user)=>{
 
     if(user){
