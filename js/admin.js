@@ -216,7 +216,12 @@ isaias.innerHTML = moeda(isaiasMes);
 evelyn.innerHTML = moeda(evelynMes);
    
   fundoSeparadoTotal.innerHTML = moeda(fundoMes);
+  console.log("Saldo disponível Isaías:", config.saldoDisponivelIsaias || 0);
+console.log("Saldo disponível Evelyn:", config.saldoDisponivelEvelyn || 0);
 
+console.log("Total sacado Isaías:", config.totalSacadoIsaias || 0);
+console.log("Total sacado Evelyn:", config.totalSacadoEvelyn || 0);
+        
 const percentual =
     totalMes >= (config.limiteMudancaPercentual || 5000)
         ? (config.percentualAcima || 20)
