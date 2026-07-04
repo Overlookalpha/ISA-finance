@@ -201,10 +201,12 @@ if (isNaN(valor) || valor <= 0) {
 });
 
     await updateDoc(configRef, {
-        fundoSeparado: (config.fundoSeparado || 0) - valor,
-        [campoSaldo]: saldoDisponivel - valor,
-        [campoSacado]: (config[campoSacado] || 0) + valor
-    });
+
+    [campoSaldo]: saldoDisponivel - valor,
+
+    [campoSacado]: (config[campoSacado] || 0) + valor
+
+});
     document.getElementById("valorSaque").value = "";
     alert("Saque realizado com sucesso!");
 
