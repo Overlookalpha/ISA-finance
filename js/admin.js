@@ -141,7 +141,7 @@ const fundoSeparado = 0;
 
     saldoIsaias: (config.saldoIsaias || 0) + valorUsuario,
 
-    saldoEvelyn: (config.saldoEvelyn || 0) + valorUsuario
+    saldoEvellyn: (config.saldoEvellyn || 0) + valorUsuario
 
 });
 
@@ -217,10 +217,10 @@ evelyn.innerHTML = moeda(evelynMes);
    
   fundoSeparadoTotal.innerHTML = moeda(fundoMes);
   console.log("Saldo disponível Isaías:", config.saldoDisponivelIsaias || 0);
-console.log("Saldo disponível Evelyn:", config.saldoDisponivelEvelyn || 0);
+console.log("Saldo disponível Evellyn:", config.saldoDisponivelEvellyn || 0);
 
 console.log("Total sacado Isaías:", config.totalSacadoIsaias || 0);
-console.log("Total sacado Evelyn:", config.totalSacadoEvelyn || 0);
+console.log("Total sacado Evellyn:", config.totalSacadoEvellyn || 0);
         
 const percentual =
     totalMes >= (config.limiteMudancaPercentual || 5000)
@@ -321,22 +321,22 @@ btnAdicionarFundo.addEventListener("click", async () => {
 });
   const saldoDisponivelIsaias =
     ((config.saldoDisponivelIsaias || 0) === 0 &&
-     (config.saldoDisponivelEvelyn || 0) === 0 &&
+     (config.saldoDisponivelEvellyn || 0) === 0 &&
      (config.fundoSeparado || 0) > 0)
         ? (config.fundoSeparado / 2) + (valor / 2)
         : (config.saldoDisponivelIsaias || 0) + (valor / 2);
 
-const saldoDisponivelEvelyn =
+const saldoDisponivelEvellyn =
     ((config.saldoDisponivelIsaias || 0) === 0 &&
-     (config.saldoDisponivelEvelyn || 0) === 0 &&
+     (config.saldoDisponivelEvellyn || 0) === 0 &&
      (config.fundoSeparado || 0) > 0)
         ? (config.fundoSeparado / 2) + (valor / 2)
-        : (config.saldoDisponivelEvelyn || 0) + (valor / 2);
+        : (config.saldoDisponivelEvellyn || 0) + (valor / 2);
 
 await updateDoc(doc(db, "configuracoes", "geral"), {
     fundoSeparado: novoFundo,
     saldoDisponivelIsaias,
-    saldoDisponivelEvelyn
+    saldoDisponivelEvellyn
 });
    
     txtValorFundo.value = "";
