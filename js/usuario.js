@@ -179,11 +179,20 @@ document
     }
 
     await addDoc(collection(db, "saques"), {
-        email: user.email,
-        valor: saldoDisponivel,
-        status: "Pago",
-        criadoEm: serverTimestamp()
-    });
+
+    uid: user.uid,
+
+    email: user.email,
+
+    nome: user.uid === config.uidIsaias ? "Isaías" : "Evelyn",
+
+    valor: saldoDisponivel,
+
+    status: "Pago",
+
+    criadoEm: serverTimestamp()
+
+});
 
     await updateDoc(configRef, {
         fundoSeparado: (config.fundoSeparado || 0) - saldoDisponivel,
