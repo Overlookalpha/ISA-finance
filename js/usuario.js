@@ -162,7 +162,13 @@ document
     let saldoDisponivel = 0;
     let campoSaldo = "";
     let campoSacado = "";
+    const valor = Number(document.getElementById("valorSaque").value);
 
+if (isNaN(valor) || valor <= 0) {
+    alert("Informe um valor válido.");
+    return;
+}
+      
     if (user.uid === config.uidIsaias) {
         saldoDisponivel = config.saldoDisponivelIsaias || 0;
         campoSaldo = "saldoDisponivelIsaias";
@@ -173,10 +179,10 @@ document
         campoSacado = "totalSacadoEvellyn";
     }
 
-    if (saldoDisponivel <= 0) {
-        alert("Você não possui saldo disponível para saque.");
-        return;
-    }
+    if (valor > saldoDisponivel) {
+    alert("Saldo insuficiente para realizar o saque.");
+    return;
+}
 
     await addDoc(collection(db, "saques"), {
 
@@ -186,7 +192,7 @@ document
 
     nome: user.uid === config.uidIsaias ? "Isaías" : "Evellyn",
 
-    valor: saldoDisponivel,
+    valor: valor,
 
     status: "Pago",
 
@@ -195,11 +201,11 @@ document
 });
 
     await updateDoc(configRef, {
-        fundoSeparado: (config.fundoSeparado || 0) - saldoDisponivel,
-        [campoSaldo]: 0,
-        [campoSacado]: (config[campoSacado] || 0) + saldoDisponivel
+        fundoSeparado: (config.fundoSeparado || 0) - valor,
+        [campoSaldo]: saldoDisponivel - valor,
+        [campoSacado]: (config[campoSacado] || 0) + valor
     });
-
+    document.getElementById("valorSaque").value = "";
     alert("Saque realizado com sucesso!");
 
     carregar();
