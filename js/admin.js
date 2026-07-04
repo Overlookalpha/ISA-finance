@@ -314,9 +314,15 @@ btnAdicionarFundo.addEventListener("click", async () => {
     criadoEm: serverTimestamp()
 
 });
-    await updateDoc(doc(db, "configuracoes", "geral"), {
-        fundoSeparado: novoFundo
-    });
+   await updateDoc(doc(db, "configuracoes", "geral"), {
+    fundoSeparado: novoFundo,
+
+    saldoDisponivelIsaias:
+        (config.saldoDisponivelIsaias || 0) + (valor / 2),
+
+    saldoDisponivelEvelyn:
+        (config.saldoDisponivelEvelyn || 0) + (valor / 2)
+});
 
    
     txtValorFundo.value = "";
