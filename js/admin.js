@@ -319,16 +319,25 @@ btnAdicionarFundo.addEventListener("click", async () => {
     criadoEm: serverTimestamp()
 
 });
-   await updateDoc(doc(db, "configuracoes", "geral"), {
+  const saldoDisponivelIsaias =
+    ((config.saldoDisponivelIsaias || 0) === 0 &&
+     (config.saldoDisponivelEvelyn || 0) === 0 &&
+     (config.fundoSeparado || 0) > 0)
+        ? (config.fundoSeparado / 2) + (valor / 2)
+        : (config.saldoDisponivelIsaias || 0) + (valor / 2);
+
+const saldoDisponivelEvelyn =
+    ((config.saldoDisponivelIsaias || 0) === 0 &&
+     (config.saldoDisponivelEvelyn || 0) === 0 &&
+     (config.fundoSeparado || 0) > 0)
+        ? (config.fundoSeparado / 2) + (valor / 2)
+        : (config.saldoDisponivelEvelyn || 0) + (valor / 2);
+
+await updateDoc(doc(db, "configuracoes", "geral"), {
     fundoSeparado: novoFundo,
-
-    saldoDisponivelIsaias:
-        (config.saldoDisponivelIsaias || 0) + (valor / 2),
-
-    saldoDisponivelEvelyn:
-        (config.saldoDisponivelEvelyn || 0) + (valor / 2)
+    saldoDisponivelIsaias,
+    saldoDisponivelEvelyn
 });
-
    
     txtValorFundo.value = "";
 
