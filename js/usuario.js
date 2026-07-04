@@ -5,7 +5,7 @@
 import { auth, db } from "./firebase.js";  
 
 import { verificarLogin, sair } from "./auth.js";
-      
+        
 import {
     doc,
     getDoc,
