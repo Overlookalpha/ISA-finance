@@ -73,13 +73,13 @@ async function carregar(){
 
     // Valores
 
-  const totalGerado = config.saldoIsaias + config.saldoEvelyn + config.empresa;
+  const totalGerado = config.saldoIsaias + config.saldoEvellyn + config.empresa;
 
 const fundoSeparado = config.fundoSeparado || 0;
 
 const faltaSeparar = Math.max(
     0,
-    (config.saldoIsaias + config.saldoEvelyn) - fundoSeparado
+    (config.saldoIsaias + config.saldoEvellyn) - fundoSeparado
 );
 
 let saldo = 0;
@@ -90,10 +90,10 @@ if (user.uid === config.uidIsaias) {
     saldo = config.saldoDisponivelIsaias || 0;
     totalSacado = config.totalSacadoIsaias || 0;
 
-} else if (user.uid === config.uidEvelyn) {
+} else if (user.uid === config.uidEvellyn) {
 
-    saldo = config.saldoDisponivelEvelyn || 0;
-    totalSacado = config.totalSacadoEvelyn || 0;
+    saldo = config.saldoDisponivelEvellyn || 0;
+    totalSacado = config.totalSacadoEvellyn || 0;
 
 }
     // Atualiza tela
@@ -168,9 +168,9 @@ document
         campoSaldo = "saldoDisponivelIsaias";
         campoSacado = "totalSacadoIsaias";
     } else {
-        saldoDisponivel = config.saldoDisponivelEvelyn || 0;
-        campoSaldo = "saldoDisponivelEvelyn";
-        campoSacado = "totalSacadoEvelyn";
+        saldoDisponivel = config.saldoDisponivelEvellyn || 0;
+        campoSaldo = "saldoDisponivelEvellyn";
+        campoSacado = "totalSacadoEvellyn";
     }
 
     if (saldoDisponivel <= 0) {
@@ -184,7 +184,7 @@ document
 
     email: user.email,
 
-    nome: user.uid === config.uidIsaias ? "Isaías" : "Evelyn",
+    nome: user.uid === config.uidIsaias ? "Isaías" : "Evellyn",
 
     valor: saldoDisponivel,
 
