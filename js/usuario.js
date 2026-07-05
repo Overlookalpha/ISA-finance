@@ -204,7 +204,9 @@ if (isNaN(valor) || valor <= 0) {
 
     [campoSaldo]: saldoDisponivel - valor,
 
-    [campoSacado]: (config[campoSacado] || 0) + valor
+    [campoSacado]: (config[campoSacado] || 0) + valor,
+
+    fundoSeparado: (config.fundoSeparado || 0) - valor
 
 });
     document.getElementById("valorSaque").value = "";
