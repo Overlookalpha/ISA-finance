@@ -231,9 +231,15 @@ const valorCadaSocio = totalMes * (percentual / 100);
 
 const fundoNecessario = valorCadaSocio * 2;
 
+const totalSacado =
+    (config.totalSacadoIsaias || 0) +
+    (config.totalSacadoEvellyn || 0);
+
 const faltaSeparar = Math.max(
     0,
-    fundoNecessario - (config.fundoSeparado || 0)
+    fundoNecessario -
+    totalSacado -
+    (config.fundoSeparado || 0)
 );
 
 faltaSepararTotal.innerHTML = moeda(faltaSeparar);
