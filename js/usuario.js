@@ -77,14 +77,14 @@ async function carregar(){
 
 const fundoSeparado = config.fundoSeparado || 0;
 
-const totalSacado =
+const totalSacadoGeral =
     (config.totalSacadoIsaias || 0) +
     (config.totalSacadoEvellyn || 0);
 
 const faltaSeparar = Math.max(
     0,
     (config.saldoIsaias + config.saldoEvellyn)
-    - totalSacado
+    - totalSacadoGeral
     - fundoSeparado
 );
 
