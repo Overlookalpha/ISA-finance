@@ -77,9 +77,15 @@ async function carregar(){
 
 const fundoSeparado = config.fundoSeparado || 0;
 
+const totalSacado =
+    (config.totalSacadoIsaias || 0) +
+    (config.totalSacadoEvellyn || 0);
+
 const faltaSeparar = Math.max(
     0,
-    (config.saldoIsaias + config.saldoEvellyn) - fundoSeparado
+    (config.saldoIsaias + config.saldoEvellyn)
+    - totalSacado
+    - fundoSeparado
 );
 
 let saldo = 0;
