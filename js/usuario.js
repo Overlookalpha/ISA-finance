@@ -64,10 +64,7 @@ async function carregar(){
 
     // Percentual
 
-    const percentualAtual =
-        config.totalEntradas >= config.limiteMudancaPercentual
-        ? config.percentualAcima
-        : config.percentualNormal;
+   const percentualAtual = 12;
 
     // Saldo
 
