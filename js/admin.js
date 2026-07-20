@@ -220,19 +220,14 @@ console.log("Saldo disponível Evellyn:", config.saldoDisponivelEvellyn || 0);
 console.log("Total sacado Isaías:", config.totalSacadoIsaias || 0);
 console.log("Total sacado Evellyn:", config.totalSacadoEvellyn || 0);
         
-const percentual = 12;
-
-const valorCadaSocio = totalMes * (percentual / 100);
-
-const fundoNecessario = valorCadaSocio * 2;
-
 const totalSacado =
     (config.totalSacadoIsaias || 0) +
     (config.totalSacadoEvellyn || 0);
 
 const faltaSeparar = Math.max(
     0,
-    fundoNecessario -
+    (config.saldoIsaias || 0) +
+    (config.saldoEvellyn || 0) -
     totalSacado -
     (config.fundoSeparado || 0)
 );
