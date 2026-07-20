@@ -74,6 +74,13 @@ async function carregar(){
 
 const fundoSeparado = config.fundoSeparado || 0;
 
+console.log("ADMIN");
+console.log("saldoIsaias:", config.saldoIsaias);
+console.log("saldoEvellyn:", config.saldoEvellyn);
+console.log("fundoSeparado:", config.fundoSeparado);
+console.log("totalSacadoIsaias:", config.totalSacadoIsaias);
+console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
+  
 const totalSacadoGeral =
     (config.totalSacadoIsaias || 0) +
     (config.totalSacadoEvellyn || 0);
