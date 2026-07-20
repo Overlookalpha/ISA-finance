@@ -219,7 +219,14 @@ console.log("Saldo disponível Evellyn:", config.saldoDisponivelEvellyn || 0);
 
 console.log("Total sacado Isaías:", config.totalSacadoIsaias || 0);
 console.log("Total sacado Evellyn:", config.totalSacadoEvellyn || 0);
-        
+
+console.log("ADMIN");
+console.log("saldoIsaias:", config.saldoIsaias);
+console.log("saldoEvellyn:", config.saldoEvellyn);
+console.log("fundoSeparado:", config.fundoSeparado);
+console.log("totalSacadoIsaias:", config.totalSacadoIsaias);
+console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
+           
 const totalSacado =
     (config.totalSacadoIsaias || 0) +
     (config.totalSacadoEvellyn || 0);
