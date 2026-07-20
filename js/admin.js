@@ -103,11 +103,9 @@ const fundoSeparado = 0;
         const config = await carregarConfiguracoes();
         console.log("Config totalEntradas:", config.totalEntradas);
           
-        const percentual = config.totalEntradas >= config.limiteMudancaPercentual
-            ? config.percentualAcima
-            : config.percentualNormal;
+        const percentual = 12;
 
-        const valorUsuario = valor * (percentual / 100);
+const valorUsuario = valor * 0.12;
 
         const valorEmpresa = valor - (valorUsuario * 2);
 
