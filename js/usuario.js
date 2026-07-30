@@ -145,9 +145,9 @@ const totalSacadoGeral =
 
 const faltaSeparar = Math.max(
     0,
-    (config.saldoIsaias + config.saldoEvellyn)
-    - totalSacadoGeral
-    - fundoSeparado
+    (isaiasMes + evellynMes)
+    - totalSacadoMes
+    - fundoMes
 );
 
 
