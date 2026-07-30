@@ -139,17 +139,23 @@ console.log("fundoSeparado:", config.fundoSeparado);
 console.log("totalSacadoIsaias:", config.totalSacadoIsaias);
 console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
   
-const totalSacadoGeral =
-    (config.totalSacadoIsaias || 0) +
-    (config.totalSacadoEvellyn || 0);
+let faltaSeparar = 0;
 
-const faltaSeparar = Math.max(
-    0,
-    (config.saldoIsaias || 0) +
-    (config.saldoEvellyn || 0) -
-    totalSacadoGeral -
-    (config.fundoSeparado || 0)
-);
+if (user.uid === config.uidIsaias) {
+
+    faltaSeparar = Math.max(
+        0,
+        isaiasMes - fundoMes - totalSacadoMes
+    );
+
+} else if (user.uid === config.uidEvellyn) {
+
+    faltaSeparar = Math.max(
+        0,
+        evellynMes - fundoMes - totalSacadoMes
+    );
+
+}
 
 
 let saldoMes = 0;
