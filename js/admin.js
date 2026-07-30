@@ -213,7 +213,8 @@ isaias.innerHTML = moeda(isaiasMes);
 
 evelyn.innerHTML = moeda(evelynMes);
    
-  fundoSeparadoTotal.innerHTML = moeda(config.fundoSeparado || 0);
+  fundoSeparadoTotal.innerHTML = moeda(fundoMes);
+           
   console.log("Saldo disponível Isaías:", config.saldoDisponivelIsaias || 0);
 console.log("Saldo disponível Evellyn:", config.saldoDisponivelEvellyn || 0);
 
@@ -227,18 +228,15 @@ console.log("fundoSeparado:", config.fundoSeparado);
 console.log("totalSacadoIsaias:", config.totalSacadoIsaias);
 console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
            
-const totalSacado =
-    (config.totalSacadoIsaias || 0) +
-    (config.totalSacadoEvellyn || 0);
-
 const faltaSeparar = Math.max(
     0,
-    (config.saldoIsaias || 0) +
-    (config.saldoEvellyn || 0) -
-    totalSacado -
-    (config.fundoSeparado || 0)
+    (isaiasMes + evelynMes) - fundoMes
 );
 
+console.log("isaiasMes:", isaiasMes);
+console.log("evelynMes:", evelynMes);
+console.log("fundoMes:", fundoMes);
+           
 faltaSepararTotal.innerHTML = moeda(faltaSeparar);
 
 await carregarHistorico();
