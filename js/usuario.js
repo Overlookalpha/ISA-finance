@@ -139,23 +139,12 @@ console.log("fundoSeparado:", config.fundoSeparado);
 console.log("totalSacadoIsaias:", config.totalSacadoIsaias);
 console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
   
-let faltaSeparar = 0;
 
-if (user.uid === config.uidIsaias) {
 
-    faltaSeparar = Math.max(
-        0,
-        isaiasMes - fundoMes - totalSacadoMes
-    );
-
-} else if (user.uid === config.uidEvellyn) {
-
-    faltaSeparar = Math.max(
-        0,
-        evellynMes - fundoMes - totalSacadoMes
-    );
-
-}
+let faltaSeparar = Math.max(
+    0,
+    (isaiasMes + evellynMes) - fundoMes
+);
 
 
 let saldoMes = 0;
@@ -191,9 +180,9 @@ document.getElementById("fundoSeparado").innerHTML =
         moeda(faltaSeparar);
 
 saldoMes = Math.max(0, saldoMes - totalSacadoMes);
-  
-   document.getElementById("saldoDisponivel").innerHTML =
-    moeda(Math.max(0, saldoMes - totalSacadoMes));
+
+document.getElementById("saldoDisponivel").innerHTML =
+    moeda(saldoMes);
 
     document.getElementById("totalSacado").innerHTML =
     moeda(totalSacadoMes);
