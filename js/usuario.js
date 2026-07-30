@@ -63,6 +63,63 @@ async function carregar(){
 
     const usuario = resultado.docs[0].data();
 
+const mes = document.getElementById("mesSelecionado").value;
+
+const [ano, numeroMes] = mes.split("-");
+
+const inicio = Timestamp.fromDate(
+    new Date(Number(ano), Number(numeroMes) - 1, 1)
+);
+
+const fim = Timestamp.fromDate(
+    new Date(Number(ano), Number(numeroMes), 1)
+);
+
+const movimentacoesQuery = query(
+    collection(db, "movimentacoes"),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+);
+
+const movimentacoesSnap = await getDocs(movimentacoesQuery);
+
+let totalGeradoMes = 0;
+let empresaMes = 0;
+let isaiasMes = 0;
+let evellynMes = 0;
+let fundoMes = 0;
+
+movimentacoesSnap.forEach((docMov) => {
+
+    const m = docMov.data();
+
+    totalGeradoMes += m.valor || 0;
+    empresaMes += m.empresa || 0;
+    isaiasMes += m.isaias || 0;
+    evellynMes += m.evelyn || 0;
+    fundoMes += m.fundoSeparado || 0;
+
+});
+
+  const saquesQuery = query(
+    collection(db, "saques"),
+    where("email", "==", user.email),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+);
+
+const saquesSnap = await getDocs(saquesQuery);
+
+let totalSacadoMes = 0;
+
+saquesSnap.forEach((docSaque) => {
+
+    const s = docSaque.data();
+
+    totalSacadoMes += s.valor || 0;
+
+});
+  
     // Percentual
 
    const percentualAtual = 12;
@@ -93,6 +150,9 @@ const faltaSeparar = Math.max(
     - fundoSeparado
 );
 
+
+let saldoMes = 0;
+
 let saldo = 0;
 let totalSacado = 0;
 
@@ -101,29 +161,37 @@ if (user.uid === config.uidIsaias) {
     saldo = config.saldoDisponivelIsaias || 0;
     totalSacado = config.totalSacadoIsaias || 0;
 
+    saldoMes = isaiasMes;
+    totalSacadoMes = 0;
+
 } else if (user.uid === config.uidEvellyn) {
 
     saldo = config.saldoDisponivelEvellyn || 0;
     totalSacado = config.totalSacadoEvellyn || 0;
 
+    saldoMes = evellynMes;
+    totalSacadoMes = 0;
+
 }
     // Atualiza tela
 
     document.getElementById("totalGerado").innerHTML =
-        moeda(totalGerado);
+    moeda(totalGerado);
 
-    document.getElementById("fundoSeparado").innerHTML =
-        moeda(fundoSeparado);
+document.getElementById("fundoSeparado").innerHTML =
+    moeda(fundoMes);
 
     document.getElementById("faltaSeparar").innerHTML =
         moeda(faltaSeparar);
 
-    document.getElementById("saldoDisponivel").innerHTML =
-        moeda(saldo);
+saldoMes = Math.max(0, saldoMes - totalSacadoMes);
+  
+   document.getElementById("saldoDisponivel").innerHTML =
+    moeda(Math.max(0, saldoMes - totalSacadoMes));
 
     document.getElementById("totalSacado").innerHTML =
-        moeda(totalSacado);
-
+    moeda(totalSacadoMes);
+  
    document.getElementById("percentualAtual").innerHTML =
     percentualAtual + "%";
 
