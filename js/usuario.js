@@ -128,7 +128,7 @@ saquesSnap.forEach((docSaque) => {
 
     // Valores
 
-  const totalGerado = config.saldoIsaias + config.saldoEvellyn + config.empresa;
+  const totalGerado = totalGeradoMes;
 
 const fundoSeparado = config.fundoSeparado || 0;
 
@@ -162,22 +162,21 @@ if (user.uid === config.uidIsaias) {
     totalSacado = config.totalSacadoIsaias || 0;
 
     saldoMes = isaiasMes;
-    totalSacadoMes = 0;
-
+    
 } else if (user.uid === config.uidEvellyn) {
 
     saldo = config.saldoDisponivelEvellyn || 0;
     totalSacado = config.totalSacadoEvellyn || 0;
 
     saldoMes = evellynMes;
-    totalSacadoMes = 0;
+   
 
 }
     // Atualiza tela
 
-    document.getElementById("totalGerado").innerHTML =
-    moeda(totalGerado);
-
+   document.getElementById("totalGerado").innerHTML =
+    moeda(totalGeradoMes);
+  
 document.getElementById("fundoSeparado").innerHTML =
     moeda(fundoMes);
 
