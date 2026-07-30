@@ -154,18 +154,13 @@ let totalSacado = 0;
 
 if (user.uid === config.uidIsaias) {
 
-    saldo = config.saldoDisponivelIsaias || 0;
+    saldoMes = config.saldoDisponivelIsaias || 0;
     totalSacado = config.totalSacadoIsaias || 0;
 
-    saldoMes = isaiasMes;
-    
 } else if (user.uid === config.uidEvellyn) {
 
-    saldo = config.saldoDisponivelEvellyn || 0;
+    saldoMes = config.saldoDisponivelEvellyn || 0;
     totalSacado = config.totalSacadoEvellyn || 0;
-
-    saldoMes = evellynMes;
-   
 
 }
     // Atualiza tela
