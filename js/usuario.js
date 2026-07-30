@@ -162,16 +162,16 @@ const fim = Timestamp.fromDate(
         const s = docSaque.data();
 
         corpo.innerHTML += `
-        <tr>
-            <td>${
-    s.criadoEm
-        ? s.criadoEm.toDate().toLocaleDateString("pt-PT")
-        : "-"
-}</td>
-            <td>${moeda(s.valor)}</td>
-            <td>${s.status}</td>
-        </tr>
-        `;
+<tr>
+    <td>${
+        s.criadoEm
+            ? s.criadoEm.toDate().toLocaleDateString("pt-PT")
+            : "-"
+    }</td>
+    <td>${moeda(s.valor)}</td>
+    <td>${s.status}</td>
+</tr>
+`;
 
     });
 
