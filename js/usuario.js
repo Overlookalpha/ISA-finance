@@ -6,7 +6,7 @@ import { auth, db } from "./firebase.js";
 
 import { verificarLogin, sair } from "./auth.js";
            
-import {
+mport {
     doc,
     getDoc,
     updateDoc,
@@ -15,7 +15,8 @@ import {
     where,
     getDocs,
     addDoc,
-    serverTimestamp
+    serverTimestamp,
+    Timestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 window.sair = sair;
 
@@ -134,13 +135,26 @@ async function carregarHistorico(email){
 
     const corpo = document.getElementById("listaSaques");
 
+const mes = document.getElementById("mesSelecionado").value;
+
+const [ano, numeroMes] = mes.split("-");
+
+const inicio = Timestamp.fromDate(
+    new Date(Number(ano), Number(numeroMes) - 1, 1)
+);
+
+const fim = Timestamp.fromDate(
+    new Date(Number(ano), Number(numeroMes), 1)
+);
+  
     corpo.innerHTML = "";
 
     const q = query(
-        collection(db,"saques"),
-        where("email","==",email)
-    );
-
+    collection(db,"saques"),
+    where("email","==",email),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+);
     const snap = await getDocs(q);
 
     snap.forEach(docSaque=>{
@@ -149,7 +163,11 @@ async function carregarHistorico(email){
 
         corpo.innerHTML += `
         <tr>
-            <td>-</td>
+            <td>${
+    s.criadoEm
+        ? s.criadoEm.toDate().toLocaleDateString("pt-PT")
+        : "-"
+}</td>
             <td>${moeda(s.valor)}</td>
             <td>${s.status}</td>
         </tr>
@@ -227,6 +245,15 @@ if (valorCorrigido > saldoCorrigido) {
     carregar();
 
 });
+
+document
+.getElementById("mesSelecionado")
+.addEventListener("change", () => {
+
+    carregar();
+
+});
+  
 auth.onAuthStateChanged((user)=>{
 
     if(user){
