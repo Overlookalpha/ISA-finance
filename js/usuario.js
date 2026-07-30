@@ -189,11 +189,13 @@ if (isNaN(valor) || valor <= 0) {
         campoSacado = "totalSacadoEvellyn";
     }
 
-    if (valor > saldoDisponivel) {
+    const saldoCorrigido = Math.round(saldoDisponivel * 100);
+const valorCorrigido = Math.round(valor * 100);
+
+if (valorCorrigido > saldoCorrigido) {
     alert("Saldo insuficiente para realizar o saque.");
     return;
 }
-
     await addDoc(collection(db, "saques"), {
 
     uid: user.uid,
