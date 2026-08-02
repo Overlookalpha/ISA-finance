@@ -109,28 +109,31 @@ const valorUsuario = valor * 0.12;
 
         const valorEmpresa = valor - (valorUsuario * 2);
 
-        await addDoc(collection(db, "movimentacoes"), {
+       const [ano, mes] = mesReferencia.value.split("-");
 
-            tipo: "entrada",
+const dataReferencia = Timestamp.fromDate(
+    new Date(Number(ano), Number(mes) - 1, 1)
+);
 
-            valor: valor,
+await addDoc(collection(db, "movimentacoes"), {
 
-            descricao: descricao,
+    tipo: "fundo",
 
-           fundoSeparado: fundoSeparado,
+    descricao: "Fundo Separado",
 
-           percentual: percentual,
+    valor: 0,
 
-            empresa: valorEmpresa,
+    empresa: 0,
 
-            isaias: valorUsuario,
+    isaias: 0,
 
-            evelyn: valorUsuario,
+    evelyn: 0,
 
-            criadoEm: serverTimestamp()
+    fundoSeparado: valor,
 
-        });
+    criadoEm: dataReferencia
 
+});
        await updateDoc(doc(db, "configuracoes", "geral"), {
 
     totalEntradas: (config.totalEntradas || 0) + valor,
