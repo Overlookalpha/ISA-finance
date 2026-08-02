@@ -274,7 +274,15 @@ if (valorCorrigido > saldoCorrigido) {
     alert("Saldo insuficiente para realizar o saque.");
     return;
 }
-    await addDoc(collection(db, "saques"), {
+    const mes = document.getElementById("mesSelecionado").value;
+
+const [ano, numeroMes] = mes.split("-");
+
+const dataReferencia = Timestamp.fromDate(
+    new Date(Number(ano), Number(numeroMes) - 1, 1)
+);
+
+await addDoc(collection(db, "saques"), {
 
     uid: user.uid,
 
@@ -286,7 +294,7 @@ if (valorCorrigido > saldoCorrigido) {
 
     status: "Pago",
 
-    criadoEm: serverTimestamp()
+    criadoEm: dataReferencia
 
 });
 
