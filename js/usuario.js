@@ -45,6 +45,10 @@ async function carregar(){
     }
 
     const config = configSnap.data();
+  console.log("UID LOGADO:", user.uid);
+console.log("UID ISAIAS:", config.uidIsaias);
+console.log("UID EVELLYN:", config.uidEvellyn);
+  
    console.log("totalEntradas =", config.totalEntradas);
    console.log("config =", config);
     
