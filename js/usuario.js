@@ -152,15 +152,17 @@ let saldoMes = 0;
 let saldo = 0;
 let totalSacado = 0;
 
+const metadeFundo = fundoMes / 2;
+
 if (user.uid === config.uidIsaias) {
 
-    saldoMes = config.saldoDisponivelIsaias || 0;
-    totalSacado = config.totalSacadoIsaias || 0;
+    saldoMes = metadeFundo;
+    totalSacado = totalSacadoMes;
 
 } else if (user.uid === config.uidEvellyn) {
 
-    saldoMes = config.saldoDisponivelEvellyn || 0;
-    totalSacado = config.totalSacadoEvellyn || 0;
+    saldoMes = metadeFundo;
+    totalSacado = totalSacadoMes;
 
 }
     // Atualiza tela
