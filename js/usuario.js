@@ -257,16 +257,48 @@ if (isNaN(valor) || valor <= 0) {
     return;
 }
       
-    if (user.uid === config.uidIsaias) {
-        saldoDisponivel = config.saldoDisponivelIsaias || 0;
-        campoSaldo = "saldoDisponivelIsaias";
-        campoSacado = "totalSacadoIsaias";
-    } else {
-        saldoDisponivel = config.saldoDisponivelEvellyn || 0;
-        campoSaldo = "saldoDisponivelEvellyn";
-        campoSacado = "totalSacadoEvellyn";
-    }
+    const mes = document.getElementById("mesSelecionado").value;
 
+const [ano, numeroMes] = mes.split("-");
+
+const inicio = Timestamp.fromDate(
+    new Date(Number(ano), Number(numeroMes) - 1, 1)
+);
+
+const fim = Timestamp.fromDate(
+    new Date(Number(ano), Number(numeroMes), 1)
+);
+
+const movSnap = await getDocs(query(
+    collection(db, "movimentacoes"),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+));
+
+let fundoMes = 0;
+
+movSnap.forEach(doc => {
+    fundoMes += doc.data().fundoSeparado || 0;
+});
+
+const saquesSnap = await getDocs(query(
+    collection(db, "saques"),
+    where("email", "==", user.email),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+));
+
+let totalSacadoMes = 0;
+
+saquesSnap.forEach(doc => {
+    totalSacadoMes += doc.data().valor || 0;
+});
+
+saldoDisponivel = Math.max(
+    0,
+    (fundoMes / 2) - totalSacadoMes
+);
+  
     const saldoCorrigido = Math.round(saldoDisponivel * 100);
 const valorCorrigido = Math.round(valor * 100);
 
@@ -274,9 +306,6 @@ if (valorCorrigido > saldoCorrigido) {
     alert("Saldo insuficiente para realizar o saque.");
     return;
 }
-    const mes = document.getElementById("mesSelecionado").value;
-
-const [ano, numeroMes] = mes.split("-");
 
 const dataReferencia = Timestamp.fromDate(
     new Date(Number(ano), Number(numeroMes) - 1, 1)
@@ -299,10 +328,6 @@ await addDoc(collection(db, "saques"), {
 });
 
     await updateDoc(configRef, {
-
-    [campoSaldo]: saldoDisponivel - valor,
-
-    [campoSacado]: (config[campoSacado] || 0) + valor,
 
     fundoSeparado: (config.fundoSeparado || 0) - valor
 
