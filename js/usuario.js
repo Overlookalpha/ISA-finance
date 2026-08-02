@@ -313,21 +313,28 @@ const dataReferencia = Timestamp.fromDate(
     new Date(Number(ano), Number(numeroMes) - 1, 1)
 );
 
-await addDoc(collection(db, "saques"), {
+try {
 
-    uid: user.uid,
+    await addDoc(collection(db, "saques"), {
 
-    email: user.email,
+        uid: user.uid,
+        email: user.email,
+        nome: user.uid === config.uidIsaias ? "Isaías" : "Evellyn",
+        valor: valor,
+        status: "Pago",
+        criadoEm: dataReferencia
 
-    nome: user.uid === config.uidIsaias ? "Isaías" : "Evellyn",
+    });
 
-    valor: valor,
+    console.log("SAQUE GRAVADO COM SUCESSO");
 
-    status: "Pago",
+} catch (erro) {
 
-    criadoEm: dataReferencia
+    console.error("ERRO AO GRAVAR SAQUE:", erro);
+    alert("Erro ao gravar o saque.");
+    return;
 
-});
+}
 
     await updateDoc(configRef, {
 
