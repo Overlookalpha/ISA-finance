@@ -216,7 +216,9 @@ const fim = Timestamp.fromDate(
     where("criadoEm", "<", fim)
 );
     const snap = await getDocs(q);
+console.log("Quantidade de saques:", snap.size);
 
+snap.forEach(doc => console.log(doc.data()));
     snap.forEach(docSaque=>{
 
         const s = docSaque.data();
