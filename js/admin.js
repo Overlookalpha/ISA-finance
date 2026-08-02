@@ -109,31 +109,28 @@ const valorUsuario = valor * 0.12;
 
         const valorEmpresa = valor - (valorUsuario * 2);
 
-       const [ano, mes] = mesReferencia.value.split("-");
+        await addDoc(collection(db, "movimentacoes"), {
 
-const dataReferencia = Timestamp.fromDate(
-    new Date(Number(ano), Number(mes) - 1, 1)
-);
+            tipo: "entrada",
 
-await addDoc(collection(db, "movimentacoes"), {
+            valor: valor,
 
-    tipo: "fundo",
+            descricao: descricao,
 
-    descricao: "Fundo Separado",
+           fundoSeparado: fundoSeparado,
 
-    valor: 0,
+           percentual: percentual,
 
-    empresa: 0,
+            empresa: valorEmpresa,
 
-    isaias: 0,
+            isaias: valorUsuario,
 
-    evelyn: 0,
+            evelyn: valorUsuario,
 
-    fundoSeparado: valor,
+            criadoEm: serverTimestamp()
 
-    criadoEm: dataReferencia
+        });
 
-});
        await updateDoc(doc(db, "configuracoes", "geral"), {
 
     totalEntradas: (config.totalEntradas || 0) + valor,
@@ -302,7 +299,12 @@ btnAdicionarFundo.addEventListener("click", async () => {
     }
 
     const config = await carregarConfiguracoes();
+    const [ano, mes] = mesReferencia.value.split("-");
 
+const dataReferencia = Timestamp.fromDate(
+    new Date(Number(ano), Number(mes) - 1, 1)
+);
+           
     const novoFundo = (config.fundoSeparado || 0) + valor;
     await addDoc(collection(db, "movimentacoes"), {
 
@@ -320,7 +322,7 @@ btnAdicionarFundo.addEventListener("click", async () => {
 
     fundoSeparado: valor,
 
-    criadoEm: serverTimestamp()
+    criadoEm: dataReferencia
 
 });
   const saldoDisponivelIsaias =
