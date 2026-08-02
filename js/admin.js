@@ -2,7 +2,7 @@
 // ISA Finance - Admin
 // =========================================
 
-import { db } from "./firebase.js";
+import { db, auth } from "./firebase.js";
            
 import {
     collection,
@@ -19,7 +19,28 @@ import {
 import { verificarLogin } from "./auth.js";
 
 verificarLogin();
+auth.onAuthStateChanged(async (user) => {
 
+    if (!user) return;
+
+    const q = query(
+        collection(db, "usuarios"),
+        where("email", "==", user.email)
+    );
+
+    const resultado = await getDocs(q);
+
+    if (resultado.empty) return;
+
+    const usuario = resultado.docs[0].data();
+
+    document.getElementById("nomeUsuario").innerHTML =
+        `👤 ${usuario.nome}`;
+
+    document.getElementById("tipoUsuario").innerHTML =
+        "🛠️ Administrador";
+
+});
 // =============================
 // ELEMENTOS
 // =============================
