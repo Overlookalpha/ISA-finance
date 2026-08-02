@@ -101,6 +101,23 @@ const fundoSeparado = 0;
     try {
 
         const config = await carregarConfiguracoes();
+
+const usuarioSnap = await getDoc(
+    doc(db, "usuarios", config.uidIsaias)
+);
+
+if (usuarioSnap.exists()) {
+
+    const usuario = usuarioSnap.data();
+
+    document.getElementById("nomeUsuario").innerHTML =
+        👤 ${usuario.nome};
+
+}
+
+document.getElementById("tipoUsuario").innerHTML =
+    "🛠️ Administrador";
+
         console.log("Config totalEntradas:", config.totalEntradas);
           
         const percentual = 12;
