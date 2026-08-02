@@ -111,7 +111,7 @@ if (usuarioSnap.exists()) {
     const usuario = usuarioSnap.data();
 
     document.getElementById("nomeUsuario").innerHTML =
-        👤 ${usuario.nome};
+        `👤 ${usuario.nome}`;
 
 }
 
