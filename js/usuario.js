@@ -68,17 +68,11 @@ console.log("UID EVELLYN:", config.uidEvellyn);
     const usuario = resultado.docs[0].data();
 document.getElementById("nomeUsuario").innerHTML =
     `👤 ${usuario.nome}`;
-  if (user.uid === config.uidIsaias) {
-
-    document.getElementById("tipoUsuario").innerHTML =
-        "🛠️ Administrador";
-
-} else {
-
+ 
     document.getElementById("tipoUsuario").innerHTML =
         "💼 Usuário";
 
-}
+
 const mes = document.getElementById("mesSelecionado").value;
 
 const [ano, numeroMes] = mes.split("-");
