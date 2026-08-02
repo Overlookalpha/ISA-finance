@@ -62,7 +62,8 @@ async function carregar(){
     }
 
     const usuario = resultado.docs[0].data();
-
+document.getElementById("nomeUsuario").innerHTML =
+    `👤 ${usuario.nome}`;
 const mes = document.getElementById("mesSelecionado").value;
 
 const [ano, numeroMes] = mes.split("-");
