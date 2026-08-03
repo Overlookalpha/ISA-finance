@@ -232,7 +232,8 @@ let empresaMes = 0;
 let isaiasMes = 0;
 let evelynMes = 0;
 let fundoMes = 0;
-      
+let totalPago = 0;
+           
 snap.forEach((docMov) => {
     const m = docMov.data();
 
@@ -241,6 +242,15 @@ snap.forEach((docMov) => {
     isaiasMes += m.isaias || 0;
     evelynMes += m.evelyn || 0;
     fundoMes += m.fundoSeparado || 0;
+});
+const saquesSnap = await getDocs(query(
+    collection(db, "saques"),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+));
+
+saquesSnap.forEach((docSaque) => {
+    totalPago += docSaque.data().valor || 0;
 });
     console.log("Total do mês:", totalMes);  
     totalEntradas.innerHTML = moeda(totalMes);
@@ -251,7 +261,9 @@ isaias.innerHTML = moeda(isaiasMes);
 
 evelyn.innerHTML = moeda(evelynMes);
    
-  fundoSeparadoTotal.innerHTML = moeda(config.fundoSeparado || 0);
+  const fundoAtual = Math.max(0, fundoMes - totalPago);
+
+fundoSeparadoTotal.innerHTML = moeda(fundoAtual);
            
   console.log("Saldo disponível Isaías:", config.saldoDisponivelIsaias || 0);
 console.log("Saldo disponível Evellyn:", config.saldoDisponivelEvellyn || 0);
@@ -268,7 +280,7 @@ console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
            
 const faltaSeparar = Math.max(
     0,
-    (isaiasMes + evelynMes) - (config.fundoSeparado || 0)
+    (isaiasMes + evelynMes) - fundoMes
 );
 console.log("isaiasMes:", isaiasMes);
 console.log("evelynMes:", evelynMes);
