@@ -129,7 +129,18 @@ saquesSnap.forEach((docSaque) => {
     totalSacadoMes += s.valor || 0;
 
 });
-  
+
+const todosSaquesSnap = await getDocs(query(
+    collection(db, "saques"),
+    where("criadoEm", ">=", inicio),
+    where("criadoEm", "<", fim)
+));
+
+let totalPago = 0;
+
+todosSaquesSnap.forEach((docSaque) => {
+    totalPago += docSaque.data().valor || 0;
+});
     // Percentual
 
    const percentualAtual = 12;
@@ -162,7 +173,7 @@ let saldoMes = 0;
 let saldo = 0;
 let totalSacado = 0;
 
-const metadeFundo = fundoMes / 2;
+const metadeFundo = fundoAtual / 2;
 
 if (user.uid === config.uidIsaias) {
 
@@ -180,9 +191,13 @@ if (user.uid === config.uidIsaias) {
    document.getElementById("totalGerado").innerHTML =
     moeda(totalGeradoMes);
   
-document.getElementById("fundoSeparado").innerHTML =
-    moeda(config.fundoSeparado || 0);
+const fundoAtual = Math.max(
+    0,
+    fundoMes - totalPago
+);
 
+document.getElementById("fundoSeparado").innerHTML =
+    moeda(fundoAtual);
     document.getElementById("faltaSeparar").innerHTML =
         moeda(faltaSeparar);
 
