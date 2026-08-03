@@ -181,7 +181,7 @@ if (user.uid === config.uidIsaias) {
     moeda(totalGeradoMes);
   
 document.getElementById("fundoSeparado").innerHTML =
-    moeda(fundoMes);
+    moeda(config.fundoSeparado || 0);
 
     document.getElementById("faltaSeparar").innerHTML =
         moeda(faltaSeparar);
