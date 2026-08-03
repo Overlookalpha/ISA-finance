@@ -173,7 +173,7 @@ let saldoMes = 0;
 let saldo = 0;
 let totalSacado = 0;
 
-const metadeFundo = fundoAtual / 2;
+const metadeFundo = fundoMes / 2;
 
 if (user.uid === config.uidIsaias) {
 
