@@ -251,7 +251,7 @@ isaias.innerHTML = moeda(isaiasMes);
 
 evelyn.innerHTML = moeda(evelynMes);
    
-  fundoSeparadoTotal.innerHTML = moeda(fundoMes);
+  fundoSeparadoTotal.innerHTML = moeda(config.fundoSeparado || 0);
            
   console.log("Saldo disponível Isaías:", config.saldoDisponivelIsaias || 0);
 console.log("Saldo disponível Evellyn:", config.saldoDisponivelEvellyn || 0);
@@ -268,9 +268,8 @@ console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
            
 const faltaSeparar = Math.max(
     0,
-    (isaiasMes + evelynMes) - fundoMes
+    (isaiasMes + evelynMes) - (config.fundoSeparado || 0)
 );
-
 console.log("isaiasMes:", isaiasMes);
 console.log("evelynMes:", evelynMes);
 console.log("fundoMes:", fundoMes);
