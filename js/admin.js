@@ -3,7 +3,7 @@
 // =========================================
 
 import { db, auth } from "./firebase.js";
-           
+
 import {
     collection,
     addDoc,
@@ -46,12 +46,11 @@ auth.onAuthStateChanged(async (user) => {
 // =============================
 
 const btnSalvar = document.getElementById("salvarEntrada");
+const textoOriginalBtnSalvar = btnSalvar.innerHTML;
 
 const txtValor = document.getElementById("valor");
 
 const txtDescricao = document.getElementById("descricao");
-
-const txtFundoSeparado = document.getElementById("fundoSeparado");
 
 const totalEntradas = document.getElementById("totalEntradas");
 
@@ -70,6 +69,7 @@ const listaEntradas = document.getElementById("listaEntradas");
 const txtValorFundo = document.getElementById("valorFundo");
 
 const btnAdicionarFundo = document.getElementById("btnAdicionarFundo");
+const textoOriginalBtnFundo = btnAdicionarFundo.innerHTML;
 
 const mesReferencia = document.getElementById("mesReferencia");
 
@@ -109,8 +109,8 @@ btnSalvar.addEventListener("click", async () => {
 
     const descricao = txtDescricao.value.trim();
 
-const fundoSeparado = 0;
-    
+    const fundoSeparado = 0;
+
     if (isNaN(valor) || valor <= 0) {
 
         alert("Informe um valor válido.");
@@ -119,84 +119,59 @@ const fundoSeparado = 0;
 
     }
 
+    // Feedback imediato — o botão já muda no clique, então
+    // não fica parecendo travado enquanto espera o Firebase.
+    btnSalvar.disabled = true;
+    btnSalvar.innerHTML = "Salvando...";
+
     try {
 
         const config = await carregarConfiguracoes();
 
-const usuarioSnap = await getDoc(
-    doc(db, "usuarios", config.uidIsaias)
-);
-
-if (usuarioSnap.exists()) {
-
-    const usuario = usuarioSnap.data();
-
-    document.getElementById("nomeUsuario").innerHTML =
-        `👤 ${usuario.nome}`;
-
-}
-
-document.getElementById("tipoUsuario").innerHTML =
-    "🛠️ Administrador";
-
-        console.log("Config totalEntradas:", config.totalEntradas);
-          
         const percentual = 12;
 
-const valorUsuario = valor * 0.12;
+        const valorUsuario = valor * 0.12;
 
         const valorEmpresa = valor - (valorUsuario * 2);
 
-        await addDoc(collection(db, "movimentacoes"), {
+        // Gravar a entrada e atualizar os totais não dependem um
+        // do outro, então rodam ao mesmo tempo em vez de em fila.
+        await Promise.all([
+            addDoc(collection(db, "movimentacoes"), {
+                tipo: "entrada",
+                valor: valor,
+                descricao: descricao,
+                fundoSeparado: fundoSeparado,
+                percentual: percentual,
+                empresa: valorEmpresa,
+                isaias: valorUsuario,
+                evelyn: valorUsuario,
+                criadoEm: serverTimestamp()
+            }),
+            updateDoc(doc(db, "configuracoes", "geral"), {
+                totalEntradas: (config.totalEntradas || 0) + valor,
+                empresa: (config.empresa || 0) + valorEmpresa,
+                saldoIsaias: (config.saldoIsaias || 0) + valorUsuario,
+                saldoEvellyn: (config.saldoEvellyn || 0) + valorUsuario
+            })
+        ]);
 
-            tipo: "entrada",
-
-            valor: valor,
-
-            descricao: descricao,
-
-           fundoSeparado: fundoSeparado,
-
-           percentual: percentual,
-
-            empresa: valorEmpresa,
-
-            isaias: valorUsuario,
-
-            evelyn: valorUsuario,
-
-            criadoEm: serverTimestamp()
-
-        });
-
-       await updateDoc(doc(db, "configuracoes", "geral"), {
-
-    totalEntradas: (config.totalEntradas || 0) + valor,
-
-    empresa: (config.empresa || 0) + valorEmpresa,
-
-    saldoIsaias: (config.saldoIsaias || 0) + valorUsuario,
-
-    saldoEvellyn: (config.saldoEvellyn || 0) + valorUsuario
-
-});
-
-    
-        console.log(txtValor);
-       console.log(txtFundoSeparado);
-       console.log(txtDescricao);
-       txtValor.value = "";
-       // txtFundoSeparado.value = "0";
-       txtDescricao.value = "";
+        txtValor.value = "";
+        txtDescricao.value = "";
 
         alert("Entrada registrada com sucesso!");
         await carregarPainel();
-        
+
     } catch (erro) {
 
         console.error(erro);
 
         alert("Erro ao registrar a entrada.");
+
+    } finally {
+
+        btnSalvar.disabled = false;
+        btnSalvar.innerHTML = textoOriginalBtnSalvar;
 
     }
 
@@ -207,113 +182,83 @@ const valorUsuario = valor * 0.12;
 
 async function carregarPainel(){
 
-    const config = await carregarConfiguracoes();
-
     const [ano, mes] = mesReferencia.value.split("-");
 
-const inicio = Timestamp.fromDate(
-    new Date(Number(ano), Number(mes) - 1, 1)
-);
+    const inicio = Timestamp.fromDate(
+        new Date(Number(ano), Number(mes) - 1, 1)
+    );
 
-const fim = Timestamp.fromDate(
-    new Date(Number(ano), Number(mes), 1)
-);
+    const fim = Timestamp.fromDate(
+        new Date(Number(ano), Number(mes), 1)
+    );
 
-const q = query(
-    collection(db, "movimentacoes"),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-);
+    const movimentacoesQuery = query(
+        collection(db, "movimentacoes"),
+        where("criadoEm", ">=", inicio),
+        where("criadoEm", "<", fim)
+    );
 
-const snap = await getDocs(q);
+    const saquesQuery = query(
+        collection(db, "saques"),
+        where("criadoEm", ">=", inicio),
+        where("criadoEm", "<", fim)
+    );
 
-let totalMes = 0;
-let empresaMes = 0;
-let isaiasMes = 0;
-let evelynMes = 0;
-let fundoMes = 0;
-let totalPago = 0;
-           
-snap.forEach((docMov) => {
-    const m = docMov.data();
+    // As duas consultas independentes disparam juntas.
+    const [snap, saquesSnap] = await Promise.all([
+        getDocs(movimentacoesQuery),
+        getDocs(saquesQuery)
+    ]);
 
-    totalMes += m.valor || 0;
-    empresaMes += m.empresa || 0;
-    isaiasMes += m.isaias || 0;
-    evelynMes += m.evelyn || 0;
-    fundoMes += m.fundoSeparado || 0;
-});
-const saquesSnap = await getDocs(query(
-    collection(db, "saques"),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-));
+    let totalMes = 0;
+    let empresaMes = 0;
+    let isaiasMes = 0;
+    let evelynMes = 0;
+    let fundoMes = 0;
+    let totalPago = 0;
 
-saquesSnap.forEach((docSaque) => {
-    totalPago += docSaque.data().valor || 0;
-});
-    console.log("Total do mês:", totalMes);  
+    snap.forEach((docMov) => {
+        const m = docMov.data();
+
+        totalMes += m.valor || 0;
+        empresaMes += m.empresa || 0;
+        isaiasMes += m.isaias || 0;
+        evelynMes += m.evelyn || 0;
+        fundoMes += m.fundoSeparado || 0;
+    });
+
+    saquesSnap.forEach((docSaque) => {
+        totalPago += docSaque.data().valor || 0;
+    });
+
     totalEntradas.innerHTML = moeda(totalMes);
 
-empresa.innerHTML = moeda(empresaMes);
+    empresa.innerHTML = moeda(empresaMes);
 
-isaias.innerHTML = moeda(isaiasMes);
+    isaias.innerHTML = moeda(isaiasMes);
 
-evelyn.innerHTML = moeda(evelynMes);
-   
-  const fundoAtual = Math.max(0, fundoMes - totalPago);
+    evelyn.innerHTML = moeda(evelynMes);
 
-fundoSeparadoTotal.innerHTML = moeda(fundoAtual);
-           
-  console.log("Saldo disponível Isaías:", config.saldoDisponivelIsaias || 0);
-console.log("Saldo disponível Evellyn:", config.saldoDisponivelEvellyn || 0);
+    const fundoAtual = Math.max(0, fundoMes - totalPago);
 
-console.log("Total sacado Isaías:", config.totalSacadoIsaias || 0);
-console.log("Total sacado Evellyn:", config.totalSacadoEvellyn || 0);
+    fundoSeparadoTotal.innerHTML = moeda(fundoAtual);
 
-console.log("ADMIN");
-console.log("saldoIsaias:", config.saldoIsaias);
-console.log("saldoEvellyn:", config.saldoEvellyn);
-console.log("fundoSeparado:", config.fundoSeparado);
-console.log("totalSacadoIsaias:", config.totalSacadoIsaias);
-console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
-           
-const faltaSeparar = Math.max(
-    0,
-    (isaiasMes + evelynMes) - fundoMes
-);
-console.log("isaiasMes:", isaiasMes);
-console.log("evelynMes:", evelynMes);
-console.log("fundoMes:", fundoMes);
-           
-faltaSepararTotal.innerHTML = moeda(faltaSeparar);
+    const faltaSeparar = Math.max(
+        0,
+        (isaiasMes + evelynMes) - fundoMes
+    );
 
-await carregarHistorico();
- 
-      
+    faltaSepararTotal.innerHTML = moeda(faltaSeparar);
+
+    // Reaproveita o snapshot de movimentações já buscado acima —
+    // evita repetir a mesma consulta só para montar o histórico.
+    renderizarHistorico(snap);
+
 }
 
-async function carregarHistorico() {
+function renderizarHistorico(snap) {
 
     listaEntradas.innerHTML = "";
-
-    const [ano, mes] = mesReferencia.value.split("-");
-
-const inicio = Timestamp.fromDate(
-    new Date(Number(ano), Number(mes) - 1, 1)
-);
-
-const fim = Timestamp.fromDate(
-    new Date(Number(ano), Number(mes), 1)
-);
-
-const q = query(
-    collection(db, "movimentacoes"),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-);
-
-const snap = await getDocs(q);
 
     snap.forEach((docMov) => {
 
@@ -347,58 +292,72 @@ btnAdicionarFundo.addEventListener("click", async () => {
         return;
     }
 
-    const config = await carregarConfiguracoes();
-    const [ano, mes] = mesReferencia.value.split("-");
+    btnAdicionarFundo.disabled = true;
+    btnAdicionarFundo.innerHTML = "Salvando...";
 
-const dataReferencia = Timestamp.fromDate(
-    new Date(Number(ano), Number(mes) - 1, 1)
-);
-           
-    const novoFundo = (config.fundoSeparado || 0) + valor;
-    await addDoc(collection(db, "movimentacoes"), {
+    try {
 
-    tipo: "fundo",
+        const config = await carregarConfiguracoes();
+        const [ano, mes] = mesReferencia.value.split("-");
 
-    descricao: "Fundo Separado",
+        const dataReferencia = Timestamp.fromDate(
+            new Date(Number(ano), Number(mes) - 1, 1)
+        );
 
-    valor: 0,
+        const novoFundo = (config.fundoSeparado || 0) + valor;
 
-    empresa: 0,
+        const saldoDisponivelIsaias =
+            ((config.saldoDisponivelIsaias || 0) === 0 &&
+             (config.saldoDisponivelEvellyn || 0) === 0 &&
+             (config.fundoSeparado || 0) > 0)
+                ? (config.fundoSeparado / 2) + (valor / 2)
+                : (config.saldoDisponivelIsaias || 0) + (valor / 2);
 
-    isaias: 0,
+        const saldoDisponivelEvellyn =
+            ((config.saldoDisponivelIsaias || 0) === 0 &&
+             (config.saldoDisponivelEvellyn || 0) === 0 &&
+             (config.fundoSeparado || 0) > 0)
+                ? (config.fundoSeparado / 2) + (valor / 2)
+                : (config.saldoDisponivelEvellyn || 0) + (valor / 2);
 
-    evelyn: 0,
+        // Gravar o lançamento do fundo e atualizar a configuração
+        // geral não dependem um do outro — rodam em paralelo.
+        await Promise.all([
+            addDoc(collection(db, "movimentacoes"), {
+                tipo: "fundo",
+                descricao: "Fundo Separado",
+                valor: 0,
+                empresa: 0,
+                isaias: 0,
+                evelyn: 0,
+                fundoSeparado: valor,
+                criadoEm: dataReferencia
+            }),
+            updateDoc(doc(db, "configuracoes", "geral"), {
+                fundoSeparado: novoFundo,
+                saldoDisponivelIsaias,
+                saldoDisponivelEvellyn
+            })
+        ]);
 
-    fundoSeparado: valor,
+        txtValorFundo.value = "";
 
-    criadoEm: dataReferencia
+        await carregarPainel();
 
-});
-  const saldoDisponivelIsaias =
-    ((config.saldoDisponivelIsaias || 0) === 0 &&
-     (config.saldoDisponivelEvellyn || 0) === 0 &&
-     (config.fundoSeparado || 0) > 0)
-        ? (config.fundoSeparado / 2) + (valor / 2)
-        : (config.saldoDisponivelIsaias || 0) + (valor / 2);
+        alert("Fundo atualizado com sucesso!");
 
-const saldoDisponivelEvellyn =
-    ((config.saldoDisponivelIsaias || 0) === 0 &&
-     (config.saldoDisponivelEvellyn || 0) === 0 &&
-     (config.fundoSeparado || 0) > 0)
-        ? (config.fundoSeparado / 2) + (valor / 2)
-        : (config.saldoDisponivelEvellyn || 0) + (valor / 2);
+    } catch (erro) {
 
-await updateDoc(doc(db, "configuracoes", "geral"), {
-    fundoSeparado: novoFundo,
-    saldoDisponivelIsaias,
-    saldoDisponivelEvellyn
-});
-   
-    txtValorFundo.value = "";
+        console.error(erro);
 
-    await carregarPainel();
+        alert("Erro ao atualizar o fundo.");
 
-    alert("Fundo atualizado com sucesso!");
+    } finally {
+
+        btnAdicionarFundo.disabled = false;
+        btnAdicionarFundo.innerHTML = textoOriginalBtnFundo;
+
+    }
 
 });
 
