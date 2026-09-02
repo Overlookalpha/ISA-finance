@@ -1,11 +1,11 @@
 // ======================================
 // ISA Finance - Usuário
 // ======================================
-  
-import { auth, db } from "./firebase.js";  
-  
+
+import { auth, db } from "./firebase.js";
+
 import { verificarLogin, sair } from "./auth.js";
-           
+
 import {
     doc,
     getDoc,
@@ -29,6 +29,44 @@ function moeda(valor){
     });
 }
 
+// =============================
+// SEMPRE ABRIR NO MÊS ATUAL
+// =============================
+
+const mesSelecionado = document.getElementById("mesSelecionado");
+
+(function selecionarMesAtual(){
+
+    const hoje = new Date();
+
+    const mesAtual =
+        `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
+
+    const existeOpcao = Array.from(mesSelecionado.options)
+        .some((opcao) => opcao.value === mesAtual);
+
+    if (existeOpcao) {
+        mesSelecionado.value = mesAtual;
+    }
+
+})();
+
+function calcularIntervaloMes(mes){
+
+    const [ano, numeroMes] = mes.split("-");
+
+    const inicio = Timestamp.fromDate(
+        new Date(Number(ano), Number(numeroMes) - 1, 1)
+    );
+
+    const fim = Timestamp.fromDate(
+        new Date(Number(ano), Number(numeroMes), 1)
+    );
+
+    return { ano, numeroMes, inicio, fim };
+
+}
+
 async function carregar(){
 
     const user = auth.currentUser;
@@ -37,214 +75,149 @@ async function carregar(){
         return;
     }
 
-    // Configurações Gerais
-    const configSnap = await getDoc(doc(db,"configuracoes","geral"));
+    const mes = mesSelecionado.value;
+
+    const { inicio, fim } = calcularIntervaloMes(mes);
+
+    const usuarioQuery = query(
+        collection(db, "usuarios"),
+        where("email", "==", user.email)
+    );
+
+    const movimentacoesQuery = query(
+        collection(db, "movimentacoes"),
+        where("criadoEm", ">=", inicio),
+        where("criadoEm", "<", fim)
+    );
+
+    const saquesQuery = query(
+        collection(db, "saques"),
+        where("email", "==", user.email),
+        where("criadoEm", ">=", inicio),
+        where("criadoEm", "<", fim)
+    );
+
+    const todosSaquesQuery = query(
+        collection(db, "saques"),
+        where("criadoEm", ">=", inicio),
+        where("criadoEm", "<", fim)
+    );
+
+    // Todas as leituras independentes disparam juntas, em vez de
+    // esperar uma terminar para começar a próxima.
+    const [
+        configSnap,
+        usuarioSnap,
+        movimentacoesSnap,
+        saquesSnap,
+        todosSaquesSnap
+    ] = await Promise.all([
+        getDoc(doc(db, "configuracoes", "geral")),
+        getDocs(usuarioQuery),
+        getDocs(movimentacoesQuery),
+        getDocs(saquesQuery),
+        getDocs(todosSaquesQuery)
+    ]);
 
     if(!configSnap.exists()){
         return;
     }
 
     const config = configSnap.data();
-  console.log("UID LOGADO:", user.uid);
-console.log("UID ISAIAS:", config.uidIsaias);
-console.log("UID EVELLYN:", config.uidEvellyn);
-  
-   console.log("totalEntradas =", config.totalEntradas);
-   console.log("config =", config);
-    
-    // Procura o usuário pelo e-mail
-    const q = query(
-        collection(db,"usuarios"),
-        where("email","==",user.email)
-    );
 
-    const resultado = await getDocs(q);
-
-    if(resultado.empty){
+    if(usuarioSnap.empty){
         alert("Usuário não encontrado.");
         return;
     }
 
-    const usuario = resultado.docs[0].data();
-document.getElementById("nomeUsuario").innerHTML =
-    `👤 ${usuario.nome}`;
- 
+    const usuario = usuarioSnap.docs[0].data();
+
+    document.getElementById("nomeUsuario").innerHTML =
+        `👤 ${usuario.nome}`;
+
     document.getElementById("tipoUsuario").innerHTML =
         "💼 Usuário";
 
+    let totalGeradoMes = 0;
+    let isaiasMes = 0;
+    let evellynMes = 0;
+    let fundoMes = 0;
 
-const mes = document.getElementById("mesSelecionado").value;
+    movimentacoesSnap.forEach((docMov) => {
 
-const [ano, numeroMes] = mes.split("-");
+        const m = docMov.data();
 
-const inicio = Timestamp.fromDate(
-    new Date(Number(ano), Number(numeroMes) - 1, 1)
-);
+        totalGeradoMes += m.valor || 0;
+        isaiasMes += m.isaias || 0;
+        evellynMes += m.evelyn || 0;
+        fundoMes += m.fundoSeparado || 0;
 
-const fim = Timestamp.fromDate(
-    new Date(Number(ano), Number(numeroMes), 1)
-);
+    });
 
-const movimentacoesQuery = query(
-    collection(db, "movimentacoes"),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-);
+    let totalSacadoMes = 0;
 
-const movimentacoesSnap = await getDocs(movimentacoesQuery);
+    saquesSnap.forEach((docSaque) => {
+        totalSacadoMes += docSaque.data().valor || 0;
+    });
 
-let totalGeradoMes = 0;
-let empresaMes = 0;
-let isaiasMes = 0;
-let evellynMes = 0;
-let fundoMes = 0;
+    let totalPago = 0;
 
-movimentacoesSnap.forEach((docMov) => {
+    todosSaquesSnap.forEach((docSaque) => {
+        totalPago += docSaque.data().valor || 0;
+    });
 
-    const m = docMov.data();
+    const percentualAtual = 12;
 
-    totalGeradoMes += m.valor || 0;
-    empresaMes += m.empresa || 0;
-    isaiasMes += m.isaias || 0;
-    evellynMes += m.evelyn || 0;
-    fundoMes += m.fundoSeparado || 0;
+    const faltaSeparar = Math.max(
+        0,
+        (isaiasMes + evellynMes) - fundoMes
+    );
 
-});
+    let saldoMes = 0;
 
-  const saquesQuery = query(
-    collection(db, "saques"),
-    where("email", "==", user.email),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-);
+    const metadeFundo = fundoMes / 2;
 
-const saquesSnap = await getDocs(saquesQuery);
+    if (user.uid === config.uidIsaias) {
+        saldoMes = metadeFundo;
+    } else if (user.uid === config.uidEvellyn) {
+        saldoMes = metadeFundo;
+    }
 
-let totalSacadoMes = 0;
+    document.getElementById("totalGerado").innerHTML =
+        moeda(totalGeradoMes);
 
-saquesSnap.forEach((docSaque) => {
+    const fundoAtual = Math.max(0, fundoMes - totalPago);
 
-    const s = docSaque.data();
+    document.getElementById("fundoSeparado").innerHTML =
+        moeda(fundoAtual);
 
-    totalSacadoMes += s.valor || 0;
-
-});
-
-const todosSaquesSnap = await getDocs(query(
-    collection(db, "saques"),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-));
-
-let totalPago = 0;
-
-todosSaquesSnap.forEach((docSaque) => {
-    totalPago += docSaque.data().valor || 0;
-});
-    // Percentual
-
-   const percentualAtual = 12;
-
-    // Saldo
-
-    // Valores
-
-  const totalGerado = totalGeradoMes;
-
-const fundoSeparado = config.fundoSeparado || 0;
-
-console.log("ADMIN");
-console.log("saldoIsaias:", config.saldoIsaias);
-console.log("saldoEvellyn:", config.saldoEvellyn);
-console.log("fundoSeparado:", config.fundoSeparado);
-console.log("totalSacadoIsaias:", config.totalSacadoIsaias);
-console.log("totalSacadoEvellyn:", config.totalSacadoEvellyn);
-  
-
-
-let faltaSeparar = Math.max(
-    0,
-    (isaiasMes + evellynMes) - fundoMes
-);
-
-
-let saldoMes = 0;
-
-let saldo = 0;
-let totalSacado = 0;
-
-const metadeFundo = fundoMes / 2;
-
-if (user.uid === config.uidIsaias) {
-
-    saldoMes = metadeFundo;
-    totalSacado = totalSacadoMes;
-
-} else if (user.uid === config.uidEvellyn) {
-
-    saldoMes = metadeFundo;
-    totalSacado = totalSacadoMes;
-
-}
-    // Atualiza tela
-
-   document.getElementById("totalGerado").innerHTML =
-    moeda(totalGeradoMes);
-  
-const fundoAtual = Math.max(
-    0,
-    fundoMes - totalPago
-);
-
-document.getElementById("fundoSeparado").innerHTML =
-    moeda(fundoAtual);
     document.getElementById("faltaSeparar").innerHTML =
         moeda(faltaSeparar);
 
-saldoMes = Math.max(0, saldoMes - totalSacadoMes);
+    saldoMes = Math.max(0, saldoMes - totalSacadoMes);
 
-document.getElementById("saldoDisponivel").innerHTML =
-    moeda(saldoMes);
+    document.getElementById("saldoDisponivel").innerHTML =
+        moeda(saldoMes);
 
     document.getElementById("totalSacado").innerHTML =
-    moeda(totalSacadoMes);
-  
-   document.getElementById("percentualAtual").innerHTML =
-    percentualAtual + "%";
+        moeda(totalSacadoMes);
 
-    carregarHistorico(user.email);
+    document.getElementById("percentualAtual").innerHTML =
+        percentualAtual + "%";
+
+    // Reaproveita o snapshot de saques já buscado acima —
+    // evita repetir a mesma consulta para montar o histórico.
+    renderizarHistorico(saquesSnap);
 
 }
 
-async function carregarHistorico(email){
+function renderizarHistorico(saquesSnap){
 
     const corpo = document.getElementById("listaSaques");
 
-const mes = document.getElementById("mesSelecionado").value;
-
-const [ano, numeroMes] = mes.split("-");
-
-const inicio = Timestamp.fromDate(
-    new Date(Number(ano), Number(numeroMes) - 1, 1)
-);
-
-const fim = Timestamp.fromDate(
-    new Date(Number(ano), Number(numeroMes), 1)
-);
-  
     corpo.innerHTML = "";
 
-    const q = query(
-    collection(db,"saques"),
-    where("email","==",email),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-);
-    const snap = await getDocs(q);
-console.log("Quantidade de saques:", snap.size);
-
-snap.forEach(doc => console.log(doc.data()));
-    snap.forEach(docSaque=>{
+    saquesSnap.forEach((docSaque) => {
 
         const s = docSaque.data();
 
@@ -264,129 +237,128 @@ snap.forEach(doc => console.log(doc.data()));
 
 }
 
-document
-.getElementById("btnSolicitarSaque")
-.addEventListener("click", async () => {
+const btnSolicitarSaque = document.getElementById("btnSolicitarSaque");
+const textoOriginalBtnSaque = btnSolicitarSaque.innerHTML;
+
+btnSolicitarSaque.addEventListener("click", async () => {
 
     const user = auth.currentUser;
 
-    const configRef = doc(db, "configuracoes", "geral");
-    const configSnap = await getDoc(configRef);
-    const config = configSnap.data();
-
-    let saldoDisponivel = 0;
-    let campoSaldo = "";
-    let campoSacado = "";
     const valor = Number(document.getElementById("valorSaque").value);
 
-if (isNaN(valor) || valor <= 0) {
-    alert("Informe um valor válido.");
-    return;
-}
-      
-    const mes = document.getElementById("mesSelecionado").value;
+    if (isNaN(valor) || valor <= 0) {
+        alert("Informe um valor válido.");
+        return;
+    }
 
-const [ano, numeroMes] = mes.split("-");
+    // Feedback imediato: o botão muda na hora do clique,
+    // então não parece "travado" enquanto espera o Firebase.
+    btnSolicitarSaque.disabled = true;
+    btnSolicitarSaque.innerHTML = "Processando...";
 
-const inicio = Timestamp.fromDate(
-    new Date(Number(ano), Number(numeroMes) - 1, 1)
-);
+    try {
 
-const fim = Timestamp.fromDate(
-    new Date(Number(ano), Number(numeroMes), 1)
-);
+        const configRef = doc(db, "configuracoes", "geral");
 
-const movSnap = await getDocs(query(
-    collection(db, "movimentacoes"),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-));
+        const mes = mesSelecionado.value;
 
-let fundoMes = 0;
+        const { ano, numeroMes, inicio, fim } = calcularIntervaloMes(mes);
 
-movSnap.forEach(doc => {
-    fundoMes += doc.data().fundoSeparado || 0;
+        const movQuery = query(
+            collection(db, "movimentacoes"),
+            where("criadoEm", ">=", inicio),
+            where("criadoEm", "<", fim)
+        );
+
+        const saquesQuery = query(
+            collection(db, "saques"),
+            where("email", "==", user.email),
+            where("criadoEm", ">=", inicio),
+            where("criadoEm", "<", fim)
+        );
+
+        // Essas três leituras não dependem uma da outra:
+        // disparam ao mesmo tempo em vez de em fila.
+        const [configSnap, movSnap, saquesSnap] = await Promise.all([
+            getDoc(configRef),
+            getDocs(movQuery),
+            getDocs(saquesQuery)
+        ]);
+
+        const config = configSnap.data();
+
+        let fundoMes = 0;
+
+        movSnap.forEach((docMov) => {
+            fundoMes += docMov.data().fundoSeparado || 0;
+        });
+
+        let totalSacadoMes = 0;
+
+        saquesSnap.forEach((docSaque) => {
+            totalSacadoMes += docSaque.data().valor || 0;
+        });
+
+        const saldoDisponivel = Math.max(
+            0,
+            (fundoMes / 2) - totalSacadoMes
+        );
+
+        const saldoCorrigido = Math.round(saldoDisponivel * 100);
+        const valorCorrigido = Math.round(valor * 100);
+
+        if (valorCorrigido > saldoCorrigido) {
+            alert("Saldo insuficiente para realizar o saque.");
+            return;
+        }
+
+        const dataReferencia = Timestamp.fromDate(
+            new Date(Number(ano), Number(numeroMes) - 1, 1)
+        );
+
+        // A gravação do saque e a atualização do fundo não dependem
+        // uma da outra, então também podem rodar em paralelo.
+        await Promise.all([
+            addDoc(collection(db, "saques"), {
+                uid: user.uid,
+                email: user.email,
+                nome: user.uid === config.uidIsaias ? "Isaías" : "Evellyn",
+                valor: valor,
+                status: "Pago",
+                criadoEm: dataReferencia
+            }),
+            updateDoc(configRef, {
+                fundoSeparado: (config.fundoSeparado || 0) - valor
+            })
+        ]);
+
+        document.getElementById("valorSaque").value = "";
+        alert("Saque realizado com sucesso!");
+
+        await carregar();
+
+    } catch (erro) {
+
+        console.error("ERRO AO GRAVAR SAQUE:", erro);
+        alert("Erro ao gravar o saque.");
+
+    } finally {
+
+        btnSolicitarSaque.disabled = false;
+        btnSolicitarSaque.innerHTML = textoOriginalBtnSaque;
+
+    }
+
 });
 
-const saquesSnap = await getDocs(query(
-    collection(db, "saques"),
-    where("email", "==", user.email),
-    where("criadoEm", ">=", inicio),
-    where("criadoEm", "<", fim)
-));
-
-let totalSacadoMes = 0;
-
-saquesSnap.forEach(doc => {
-    totalSacadoMes += doc.data().valor || 0;
-});
-
-saldoDisponivel = Math.max(
-    0,
-    (fundoMes / 2) - totalSacadoMes
-);
-  
-    const saldoCorrigido = Math.round(saldoDisponivel * 100);
-const valorCorrigido = Math.round(valor * 100);
-
-if (valorCorrigido > saldoCorrigido) {
-    alert("Saldo insuficiente para realizar o saque.");
-    return;
-}
-
-const dataReferencia = Timestamp.fromDate(
-    new Date(Number(ano), Number(numeroMes) - 1, 1)
-);
-
-try {
-
-    await addDoc(collection(db, "saques"), {
-
-        uid: user.uid,
-        email: user.email,
-        nome: user.uid === config.uidIsaias ? "Isaías" : "Evellyn",
-        valor: valor,
-        status: "Pago",
-        criadoEm: dataReferencia
-
-    });
-
-    console.log("SAQUE GRAVADO COM SUCESSO");
-
-} catch (erro) {
-
-    console.error("ERRO AO GRAVAR SAQUE:", erro);
-    alert("Erro ao gravar o saque.");
-    return;
-
-}
-
-    await updateDoc(configRef, {
-
-    fundoSeparado: (config.fundoSeparado || 0) - valor
-
-});
-    document.getElementById("valorSaque").value = "";
-    alert("Saque realizado com sucesso!");
-
+mesSelecionado.addEventListener("change", () => {
     carregar();
-
 });
 
-document
-.getElementById("mesSelecionado")
-.addEventListener("change", () => {
+auth.onAuthStateChanged((user) => {
 
-    carregar();
-
-});
-  
-auth.onAuthStateChanged((user)=>{
-
-    if(user){
-
+    if (user) {
         carregar();
-
     }
 
 });
