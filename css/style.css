@@ -45,6 +45,27 @@ body{
     background:#dc2626;
 }
 
+.topo .btnAtualizar{
+    width:150px;
+    background:#2563eb;
+}
+
+.topo .btnAtualizar:hover{
+    background:#1d4ed8;
+}
+
+.topo button:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+    transform:none;
+}
+
+#statusAtualizacao{
+    color:#cbd5e1;
+    font-size:12px;
+    white-space:nowrap;
+}
+
 .container{
     max-width:1400px;
     margin:30px auto;
@@ -216,6 +237,19 @@ tbody tr:hover{
 
     .topo button{
         width:100%;
+    }
+
+    .topo .btnAtualizar{
+        width:100%;
+    }
+
+    .topo > div{
+        width:100%;
+        flex-wrap:wrap;
+    }
+
+    .topo > div input{
+        margin-bottom:0;
     }
 
 }
