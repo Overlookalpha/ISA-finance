@@ -23,22 +23,28 @@ auth.onAuthStateChanged(async (user) => {
 
     if (!user) return;
 
-    const q = query(
-        collection(db, "usuarios"),
-        where("email", "==", user.email)
-    );
+    try {
+        const q = query(
+            collection(db, "usuarios"),
+            where("email", "==", user.email)
+        );
 
-    const resultado = await getDocs(q);
+        const resultado = await getDocs(q);
 
-    if (resultado.empty) return;
+        if (!resultado.empty) {
+            const usuario = resultado.docs[0].data();
 
-    const usuario = resultado.docs[0].data();
+            document.getElementById("nomeUsuario").innerHTML =
+                `👤 ${usuario.nome}`;
 
-    document.getElementById("nomeUsuario").innerHTML =
-        `👤 ${usuario.nome}`;
+            document.getElementById("tipoUsuario").innerHTML =
+                "🛠️ Administrador";
+        }
+    } catch (erro) {
+        console.error("Erro ao carregar identificação do admin:", erro);
+    }
 
-    document.getElementById("tipoUsuario").innerHTML =
-        "🛠️ Administrador";
+    await carregarPainel();
 
 });
 // =============================
@@ -72,6 +78,11 @@ const btnAdicionarFundo = document.getElementById("btnAdicionarFundo");
 const textoOriginalBtnFundo = btnAdicionarFundo.innerHTML;
 
 const mesReferencia = document.getElementById("mesReferencia");
+const btnAtualizarPainel = document.getElementById("btnAtualizarPainel");
+const statusAtualizacao = document.getElementById("statusAtualizacao");
+
+let painelCarregando = false;
+let ultimoCarregamento = 0;
 
 // =============================
 // FORMATA MOEDA
@@ -180,7 +191,22 @@ btnSalvar.addEventListener("click", async () => {
 // CARREGAR PAINEL
 // =============================
 
-async function carregarPainel(){
+async function carregarPainel(mostrarErro = false){
+
+    if (painelCarregando) return;
+
+    painelCarregando = true;
+    btnAtualizarPainel.disabled = true;
+    btnAtualizarPainel.innerHTML = "🔄 Atualizando...";
+    statusAtualizacao.innerText = "Buscando dados...";
+
+    if (!listaEntradas.children.length) {
+        listaEntradas.innerHTML = `
+            <tr><td colspan="6">Carregando histórico...</td></tr>
+        `;
+    }
+
+    try {
 
     const [ano, mes] = mesReferencia.value.split("-");
 
@@ -254,11 +280,44 @@ async function carregarPainel(){
     // evita repetir a mesma consulta só para montar o histórico.
     renderizarHistorico(snap);
 
+    ultimoCarregamento = Date.now();
+    statusAtualizacao.innerText = "Atualizado agora";
+
+    } catch (erro) {
+
+        console.error("Erro ao atualizar painel:", erro);
+        statusAtualizacao.innerText = "Falha ao atualizar. Toque em Atualizar tela.";
+
+        if (listaEntradas.textContent.includes("Carregando histórico")) {
+            listaEntradas.innerHTML = `
+                <tr><td colspan="6">Não foi possível carregar o histórico.</td></tr>
+            `;
+        }
+
+        if (mostrarErro) {
+            alert("Não foi possível atualizar agora. Verifique a internet e tente novamente.");
+        }
+
+    } finally {
+
+        painelCarregando = false;
+        btnAtualizarPainel.disabled = false;
+        btnAtualizarPainel.innerHTML = "🔄 Atualizar tela";
+
+    }
+
 }
 
 function renderizarHistorico(snap) {
 
     listaEntradas.innerHTML = "";
+
+    if (snap.empty) {
+        listaEntradas.innerHTML = `
+            <tr><td colspan="6">Nenhuma movimentação neste mês.</td></tr>
+        `;
+        return;
+    }
 
     snap.forEach((docMov) => {
 
@@ -366,8 +425,23 @@ const hoje = new Date();
 mesReferencia.value =
     `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
 
-carregarPainel();
+btnAtualizarPainel.addEventListener("click", () => {
+    carregarPainel(true);
+});
 
 mesReferencia.addEventListener("change", () => {
     carregarPainel();
+});
+
+window.addEventListener("online", () => {
+    if (auth.currentUser) carregarPainel();
+});
+
+document.addEventListener("visibilitychange", () => {
+    const voltouParaTela = document.visibilityState === "visible";
+    const precisaAtualizar = Date.now() - ultimoCarregamento > 10000;
+
+    if (voltouParaTela && precisaAtualizar && auth.currentUser) {
+        carregarPainel();
+    }
 });
