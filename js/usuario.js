@@ -262,7 +262,7 @@ btnSolicitarSaque.addEventListener("click", async () => {
 
         const mes = mesSelecionado.value;
 
-        const { ano, numeroMes, inicio, fim } = calcularIntervaloMes(mes);
+        const { inicio, fim } = calcularIntervaloMes(mes);
 
         const movQuery = query(
             collection(db, "movimentacoes"),
@@ -312,10 +312,6 @@ btnSolicitarSaque.addEventListener("click", async () => {
             return;
         }
 
-        const dataReferencia = Timestamp.fromDate(
-            new Date(Number(ano), Number(numeroMes) - 1, 1)
-        );
-
         // A gravação do saque e a atualização do fundo não dependem
         // uma da outra, então também podem rodar em paralelo.
         await Promise.all([
@@ -325,7 +321,7 @@ btnSolicitarSaque.addEventListener("click", async () => {
                 nome: user.uid === config.uidIsaias ? "Isaías" : "Evellyn",
                 valor: valor,
                 status: "Pago",
-                criadoEm: dataReferencia
+                criadoEm: serverTimestamp()
             }),
             updateDoc(configRef, {
                 fundoSeparado: (config.fundoSeparado || 0) - valor
