@@ -37,6 +37,10 @@ Carregando...
             🔄 Atualizar tela
         </button>
 
+        <button type="button" id="btnRelatorios" class="btnRelatorios">
+            📊 Relatórios
+        </button>
+
         <button class="btnSair" onclick="sair()">
             Sair
         </button>
@@ -97,6 +101,17 @@ Carregando...
         </article>
         <article class="painel insight-card"><span class="eyebrow">DESTAQUE</span><h2 id="insightTitulo">A carregar dados…</h2><p id="insightTexto">Os números do mês aparecerão aqui.</p></article>
     </section>
+
+    <section id="relatoriosFinanceiros" class="relatorios-financeiros">
+        <article class="painel">
+            <div class="section-head"><div><span class="eyebrow">EVOLUÇÃO</span><h2>Faturamento dos últimos meses</h2></div><span class="pill">Histórico</span></div>
+            <canvas id="graficoMensal" aria-label="Faturamento por mês"></canvas>
+        </article>
+        <article class="painel ranking-clientes">
+            <div class="section-head"><div><span class="eyebrow">CLIENTES</span><h2>Melhores clientes</h2></div><span class="pill">Top 10</span></div>
+            <ol id="rankingClientes" class="ranking-lista"><li>A carregar histórico…</li></ol>
+        </article>
+    </section>
     </section>
 
     <section class="painel clientes-panel area-aba" data-area="clientes">
@@ -123,6 +138,9 @@ Carregando...
     id="descricao"
     placeholder="Descrição"
 >
+
+<input type="text" id="clienteEntrada" list="clientesEntrada" placeholder="Cliente (opcional)">
+<datalist id="clientesEntrada"></datalist>
 
 <textarea id="observacaoEntrada" placeholder="Observação desta entrada (opcional)"></textarea>
 

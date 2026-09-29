@@ -58,6 +58,7 @@ const txtValor = document.getElementById("valor");
 
 const txtDescricao = document.getElementById("descricao");
 const txtObservacaoEntrada = document.getElementById("observacaoEntrada");
+const txtClienteEntrada = document.getElementById("clienteEntrada");
 
 const totalEntradas = document.getElementById("totalEntradas");
 
@@ -121,6 +122,7 @@ btnSalvar.addEventListener("click", async () => {
 
     const descricao = txtDescricao.value.trim();
     const observacao = txtObservacaoEntrada.value.trim();
+    const clienteNome = txtClienteEntrada.value.trim();
 
     const fundoSeparado = 0;
 
@@ -155,6 +157,7 @@ btnSalvar.addEventListener("click", async () => {
                 valor: valor,
                 descricao: descricao,
                 observacao,
+                clienteNome,
                 fundoSeparado: fundoSeparado,
                 percentual: percentual,
                 empresa: valorEmpresa,
@@ -173,6 +176,7 @@ btnSalvar.addEventListener("click", async () => {
         txtValor.value = "";
         txtDescricao.value = "";
         txtObservacaoEntrada.value = "";
+        txtClienteEntrada.value = "";
 
         alert("Entrada registrada com sucesso!");
         await carregarPainel();
@@ -284,6 +288,7 @@ async function carregarPainel(mostrarErro = false){
     // evita repetir a mesma consulta só para montar o histórico.
     renderizarHistorico(snap);
     atualizarRecursosPainel(totalMes, snap);
+    carregarRelatorios();
 
     ultimoCarregamento = Date.now();
     statusAtualizacao.innerText = "Atualizado agora";
@@ -454,6 +459,7 @@ document.addEventListener("visibilitychange", () => {
 
 // Recursos visuais adicionados sem interferir no fluxo financeiro existente.
 let graficoDesempenho;
+let graficoMensal;
 
 function atualizarRecursosPainel(total, movimentacoes) {
     const canvas = document.getElementById("graficoDesempenho");
@@ -488,6 +494,34 @@ function atualizarRecursosPainel(total, movimentacoes) {
     document.getElementById("insightTexto").innerText = total ? `Foram registados ${moeda(total)} no período selecionado.` : "Registe uma nova entrada para ver o desempenho.";
     document.getElementById("periodoGrafico").innerText = mesReferencia.value || "Período";
 }
+
+async function carregarRelatorios() {
+    const [movimentacoesSnap, clientesSnap] = await Promise.all([
+        getDocs(collection(db, "movimentacoes")), getDocs(collection(db, "clientes"))
+    ]);
+    const clientes = new Map();
+    clientesSnap.forEach((item) => clientes.set((item.data().nome || "").trim().toLowerCase(), item.data().nome || "Cliente"));
+    const listaClientes = document.getElementById("clientesEntrada");
+    listaClientes.innerHTML = [...clientes.values()].map((nome) => `<option value="${nome}"></option>`).join("");
+    const porMes = new Map(); const porCliente = new Map();
+    movimentacoesSnap.forEach((item) => {
+        const mov = item.data(); if (mov.tipo === "fundo" || !mov.valor || !mov.criadoEm) return;
+        const data = mov.criadoEm.toDate(); const mes = `${data.getFullYear()}-${String(data.getMonth()+1).padStart(2,"0")}`;
+        porMes.set(mes, (porMes.get(mes) || 0) + Number(mov.valor));
+        const nome = (mov.clienteNome || clientes.get((mov.descricao || "").trim().toLowerCase()) || "").trim();
+        if (nome) porCliente.set(nome, (porCliente.get(nome) || 0) + Number(mov.valor));
+    });
+    const meses = [...porMes.keys()].sort().slice(-10);
+    const canvas = document.getElementById("graficoMensal");
+    if (canvas && window.Chart) {
+        if (graficoMensal) graficoMensal.destroy();
+        graficoMensal = new Chart(canvas, { type:"line", data:{labels:meses.map((m) => m.slice(5)+"/"+m.slice(0,4)),datasets:[{label:"Entradas por mês (€)",data:meses.map((m)=>porMes.get(m)),borderColor:"#38bdf8",backgroundColor:"rgba(56,189,248,.18)",fill:true,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:"#cbd5e1"},grid:{color:"#334155"}},x:{ticks:{color:"#cbd5e1"},grid:{display:false}}}} });
+    }
+    const ranking = [...porCliente.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
+    document.getElementById("rankingClientes").innerHTML = ranking.length ? ranking.map(([nome,valor],i)=>`<li><span>${i+1}. <strong>${nome}</strong></span><b>${moeda(valor)}</b></li>`).join("") : "<li>As novas entradas podem ser associadas a um cliente para formar o ranking.</li>";
+}
+
+document.getElementById("btnRelatorios").addEventListener("click", () => document.getElementById("relatoriosFinanceiros").scrollIntoView({behavior:"smooth"}));
 
 const buscaCliente = document.getElementById("buscaCliente");
 const resultadoCliente = document.getElementById("resultadoCliente");
