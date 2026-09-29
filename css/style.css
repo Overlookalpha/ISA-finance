@@ -289,19 +289,19 @@ tbody tr:hover{
 
 /* Telemóvel: navegação sempre acessível sem ocupar metade do ecrã. */
 @media(max-width:700px){
- body{padding:108px 0 76px}
- .topo{height:52px;padding:7px 12px;flex-direction:row;gap:8px}
- .topo h1{font-size:19px;white-space:nowrap}.topo #nomeUsuario,.topo #tipoUsuario{display:none}
+ body{padding:102px 0 66px}
+ .topo{height:50px;padding:5px 9px;flex-direction:row;gap:5px}
+ .topo h1{font-size:17px;white-space:nowrap}.topo #nomeUsuario,.topo #tipoUsuario{display:none}
  .topo>div,.acoesTopo{width:auto!important;flex:1;justify-content:flex-end;gap:6px;flex-wrap:nowrap!important}
- .topo input[type="month"],.acoesTopo select{width:116px!important;height:34px;font-size:12px}
- .topo button,.topo .btnAtualizar,.acoesTopo button{width:auto!important;height:34px;padding:7px 9px;font-size:12px}
+ .topo input[type="month"],.acoesTopo select{width:108px!important;height:30px;font-size:11px;padding:0 5px}
+ .topo button,.topo .btnAtualizar,.acoesTopo button{width:auto!important;height:30px;padding:5px 7px;font-size:11px;border-radius:7px}
  #statusAtualizacao{display:none}
- .tabs-principais{top:52px;padding:4px 8px;gap:3px;overflow-x:auto;justify-content:flex-start}
- .tabs-principais .aba{min-width:43px;flex:1;padding:7px 5px!important;font-size:16px!important}
+ .tabs-principais{top:50px;padding:3px 8px;gap:3px;overflow-x:auto;justify-content:flex-start}
+ .tabs-principais .aba{min-width:43px;flex:1;padding:6px 5px!important;font-size:15px!important}
  .tabs-principais .aba span{display:none}
  .container{margin:16px auto;padding:0 14px}
  .card{padding:18px}.card h2{font-size:30px}.card h3{font-size:12px;margin-bottom:10px}
  .painel,.novaEntrada,.historico{padding:18px;border-radius:15px}
- .rodape-fixo{height:66px;padding:5px 8px}.rodape-fixo .aba{font-size:17px!important;padding:5px 2px!important}.rodape-fixo .aba span{font-size:9px}
+ .rodape-fixo{height:58px;padding:4px 8px}.rodape-fixo .aba{font-size:16px!important;padding:4px 2px!important}.rodape-fixo .aba span{font-size:9px}
  .novaEntrada button{width:100%}.novaEntrada textarea{min-height:78px}
 }
