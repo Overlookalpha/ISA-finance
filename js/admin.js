@@ -57,6 +57,7 @@ const textoOriginalBtnSalvar = btnSalvar.innerHTML;
 const txtValor = document.getElementById("valor");
 
 const txtDescricao = document.getElementById("descricao");
+const txtObservacaoEntrada = document.getElementById("observacaoEntrada");
 
 const totalEntradas = document.getElementById("totalEntradas");
 
@@ -119,6 +120,7 @@ btnSalvar.addEventListener("click", async () => {
     const valor = Number(txtValor.value);
 
     const descricao = txtDescricao.value.trim();
+    const observacao = txtObservacaoEntrada.value.trim();
 
     const fundoSeparado = 0;
 
@@ -152,6 +154,7 @@ btnSalvar.addEventListener("click", async () => {
                 tipo: "entrada",
                 valor: valor,
                 descricao: descricao,
+                observacao,
                 fundoSeparado: fundoSeparado,
                 percentual: percentual,
                 empresa: valorEmpresa,
@@ -169,6 +172,7 @@ btnSalvar.addEventListener("click", async () => {
 
         txtValor.value = "";
         txtDescricao.value = "";
+        txtObservacaoEntrada.value = "";
 
         alert("Entrada registrada com sucesso!");
         await carregarPainel();
@@ -202,7 +206,7 @@ async function carregarPainel(mostrarErro = false){
 
     if (!listaEntradas.children.length) {
         listaEntradas.innerHTML = `
-            <tr><td colspan="6">Carregando histórico...</td></tr>
+            <tr><td colspan="7">Carregando histórico...</td></tr>
         `;
     }
 
@@ -279,6 +283,7 @@ async function carregarPainel(mostrarErro = false){
     // Reaproveita o snapshot de movimentações já buscado acima —
     // evita repetir a mesma consulta só para montar o histórico.
     renderizarHistorico(snap);
+    atualizarRecursosPainel(totalMes, snap);
 
     ultimoCarregamento = Date.now();
     statusAtualizacao.innerText = "Atualizado agora";
@@ -290,7 +295,7 @@ async function carregarPainel(mostrarErro = false){
 
         if (listaEntradas.textContent.includes("Carregando histórico")) {
             listaEntradas.innerHTML = `
-                <tr><td colspan="6">Não foi possível carregar o histórico.</td></tr>
+                <tr><td colspan="7">Não foi possível carregar o histórico.</td></tr>
             `;
         }
 
@@ -314,7 +319,7 @@ function renderizarHistorico(snap) {
 
     if (snap.empty) {
         listaEntradas.innerHTML = `
-            <tr><td colspan="6">Nenhuma movimentação neste mês.</td></tr>
+            <tr><td colspan="7">Nenhuma movimentação neste mês.</td></tr>
         `;
         return;
     }
@@ -331,6 +336,7 @@ function renderizarHistorico(snap) {
                : "-"
                }</td>
                 <td>${m.descricao || ""}</td>
+                <td>${m.observacao || "-"}</td>
                 <td>${moeda(m.valor || 0)}</td>
                 <td>${moeda(m.empresa || 0)}</td>
                 <td>${moeda(m.isaias || 0)}</td>
@@ -445,3 +451,76 @@ document.addEventListener("visibilitychange", () => {
         carregarPainel();
     }
 });
+
+// Recursos visuais adicionados sem interferir no fluxo financeiro existente.
+let graficoDesempenho;
+
+function atualizarRecursosPainel(total, movimentacoes) {
+    const canvas = document.getElementById("graficoDesempenho");
+    if (!canvas || !window.Chart) return;
+
+    if (graficoDesempenho) graficoDesempenho.destroy();
+    const porDia = new Map();
+    movimentacoes.forEach((docMov) => {
+        const entrada = docMov.data();
+        if (entrada.tipo === "fundo" || !entrada.criadoEm) return;
+        const dia = entrada.criadoEm.toDate().toLocaleDateString("pt-PT", { day: "2-digit", month: "2-digit" });
+        porDia.set(dia, (porDia.get(dia) || 0) + Number(entrada.valor || 0));
+    });
+    const labels = [...porDia.keys()];
+    const valores = [...porDia.values()];
+
+    graficoDesempenho = new Chart(canvas, {
+        type: "bar",
+        data: {
+            labels,
+            datasets: [{
+                label: "Entradas por dia (€)",
+                data: valores,
+                backgroundColor: "#38bdf8",
+                borderRadius: 8
+            }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: "#cbd5e1" }, grid: { color: "#334155" } }, x: { ticks: { color: "#cbd5e1" }, grid: { display: false } } } }
+    });
+
+    document.getElementById("insightTitulo").innerText = total ? "Entradas registadas por dia." : "Ainda não há entradas neste mês.";
+    document.getElementById("insightTexto").innerText = total ? `Foram registados ${moeda(total)} no período selecionado.` : "Registe uma nova entrada para ver o desempenho.";
+    document.getElementById("periodoGrafico").innerText = mesReferencia.value || "Período";
+}
+
+const buscaCliente = document.getElementById("buscaCliente");
+const resultadoCliente = document.getElementById("resultadoCliente");
+
+document.getElementById("btnBuscarCliente").addEventListener("click", async () => {
+    const termo = buscaCliente.value.trim().toLowerCase();
+    if (!termo) return resultadoCliente.innerText = "Digite um nome, telefone ou e-mail para pesquisar.";
+    resultadoCliente.innerText = "A pesquisar clientes…";
+    try {
+        const clientes = await getDocs(collection(db, "clientes"));
+        const encontrados = [];
+        clientes.forEach((cliente) => {
+            const dados = cliente.data();
+            const texto = `${dados.nome || ""} ${dados.telefone || ""} ${dados.email || ""}`.toLowerCase();
+            if (texto.includes(termo)) encontrados.push(dados);
+        });
+        resultadoCliente.innerHTML = encontrados.length
+            ? encontrados.map((c) => `<strong>${c.nome || "Cliente sem nome"}</strong><br><span>${c.telefone || "Sem contacto"}${c.email ? " · " + c.email : ""}</span>`).join("<hr>")
+            : "Nenhum cliente encontrado.";
+    } catch (erro) {
+        console.error("Erro ao pesquisar clientes:", erro);
+        resultadoCliente.innerText = "Não foi possível pesquisar agora.";
+    }
+});
+
+
+const botoesAbas = document.querySelectorAll("[data-aba]");
+const areasAbas = document.querySelectorAll("[data-area]");
+
+function abrirAba(nomeAba) {
+    areasAbas.forEach((area) => area.classList.toggle("ativa", area.dataset.area === nomeAba));
+    botoesAbas.forEach((botao) => botao.classList.toggle("ativa", botao.dataset.aba === nomeAba));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+botoesAbas.forEach((botao) => botao.addEventListener("click", () => abrirAba(botao.dataset.aba)));

@@ -10,6 +10,7 @@
 <title>ISA Finance - Administração</title>
 
 <link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
@@ -46,8 +47,16 @@ Carregando...
 
 </header>
 
-<main class="container">
+<nav class="tabs-principais" aria-label="Áreas do painel">
+    <button class="aba ativa" type="button" data-aba="visao">⌂ <span>Visão geral</span></button>
+    <button class="aba" type="button" data-aba="lancamentos">＋ <span>Lançamentos</span></button>
+    <button class="aba" type="button" data-aba="clientes">♙ <span>Clientes</span></button>
+    <button class="aba" type="button" data-aba="historico">☷ <span>Histórico</span></button>
+</nav>
 
+<main class="container dashboard-main">
+
+    <section class="area-aba ativa" data-area="visao">
     <section class="cards">
 
         <div class="card">
@@ -81,7 +90,25 @@ Carregando...
         
     </section>
 
-    <section class="novaEntrada">
+    <section class="dashboard-grid">
+        <article class="painel">
+            <div class="section-head"><div><span class="eyebrow">VISÃO GERAL</span><h2>Desempenho do mês</h2></div><span id="periodoGrafico" class="pill">Este mês</span></div>
+            <canvas id="graficoDesempenho" aria-label="Gráfico de desempenho financeiro"></canvas>
+        </article>
+        <article class="painel insight-card"><span class="eyebrow">DESTAQUE</span><h2 id="insightTitulo">A carregar dados…</h2><p id="insightTexto">Os números do mês aparecerão aqui.</p></article>
+    </section>
+    </section>
+
+    <section class="painel clientes-panel area-aba" data-area="clientes">
+        <div class="section-head"><div><span class="eyebrow">CLIENTES</span><h2>Pesquisa e observações</h2></div></div>
+        <div class="cliente-form">
+            <input id="buscaCliente" placeholder="Pesquisar por nome, telefone ou e-mail">
+            <button type="button" id="btnBuscarCliente">Pesquisar</button>
+        </div>
+        <div id="resultadoCliente" class="resultado-cliente">Pesquise um cliente para consultar ou guardar uma observação.</div>
+    </section>
+
+    <section class="novaEntrada area-aba" data-area="lancamentos">
 
         <h2>Nova Entrada</h2>
 
@@ -96,6 +123,8 @@ Carregando...
     id="descricao"
     placeholder="Descrição"
 >
+
+<textarea id="observacaoEntrada" placeholder="Observação desta entrada (opcional)"></textarea>
 
         <button id="salvarEntrada">
 
@@ -119,7 +148,7 @@ Carregando...
         
     </section>
 
-    <section class="historico">
+    <section class="historico area-aba" data-area="historico">
 
         <h2>Histórico</h2>
 
@@ -132,6 +161,8 @@ Carregando...
                     <th>Data</th>
 
                     <th>Descrição</th>
+
+                    <th>Observação</th>
 
                     <th>Valor</th>
 
@@ -154,6 +185,13 @@ Carregando...
     </section>
 
 </main>
+
+<footer class="rodape-fixo">
+    <button class="aba ativa" type="button" data-aba="visao">⌂<span>Início</span></button>
+    <button class="aba" type="button" data-aba="lancamentos">＋<span>Adicionar</span></button>
+    <button class="aba" type="button" data-aba="clientes">♙<span>Clientes</span></button>
+    <button class="aba" type="button" data-aba="historico">☷<span>Histórico</span></button>
+</footer>
 
  <script type="module">
 

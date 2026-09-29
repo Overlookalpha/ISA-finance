@@ -358,3 +358,14 @@ auth.onAuthStateChanged((user) => {
     }
 
 });
+
+const botoesAbasUsuario = document.querySelectorAll("[data-aba]");
+const areasAbasUsuario = document.querySelectorAll("[data-area]");
+
+function abrirAbaUsuario(nomeAba) {
+    areasAbasUsuario.forEach((area) => area.classList.toggle("ativa", area.dataset.area === nomeAba));
+    botoesAbasUsuario.forEach((botao) => botao.classList.toggle("ativa", botao.dataset.aba === nomeAba));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+botoesAbasUsuario.forEach((botao) => botao.addEventListener("click", () => abrirAbaUsuario(botao.dataset.aba)));

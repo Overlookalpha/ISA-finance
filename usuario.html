@@ -63,9 +63,15 @@ Sair
 
 </header>
 
+<nav class="tabs-principais" aria-label="Áreas do usuário">
+<button class="aba ativa" type="button" data-aba="resumo">⌂ <span>Resumo</span></button>
+<button class="aba" type="button" data-aba="saque">€ <span>Saque</span></button>
+<button class="aba" type="button" data-aba="historico">☷ <span>Histórico</span></button>
+</nav>
+
 <main class="container">
 
-<div class="cards">
+<section class="area-aba ativa" data-area="resumo"><div class="cards">
 
 <div class="card">
 <h3>💰 Total Gerado</h3>
@@ -98,8 +104,9 @@ Sair
 </div>
 
 </div>
+</section>
 
-<section class="historico">
+<section class="historico area-aba" data-area="historico">
 
 <h2>📜 Histórico de Saques</h2>
 
@@ -125,7 +132,7 @@ Sair
 
 </section>
 
-<div style="margin-top:30px;text-align:center;">
+<section class="area-aba saque-usuario" data-area="saque"><div style="margin-top:30px;text-align:center;">
 <input
     type="number"
     id="valorSaque"
@@ -140,8 +147,15 @@ Sair
 </button>
 
 </div>
+</section>
 
 </main>
+
+<footer class="rodape-fixo">
+<button class="aba ativa" type="button" data-aba="resumo">⌂<span>Início</span></button>
+<button class="aba" type="button" data-aba="saque">€<span>Saque</span></button>
+<button class="aba" type="button" data-aba="historico">☷<span>Histórico</span></button>
+</footer>
 
 <script type="module" src="js/usuario.js"></script>
 
