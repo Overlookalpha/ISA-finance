@@ -85,6 +85,7 @@ const btnAtualizarPainel = document.getElementById("btnAtualizarPainel");
 const statusAtualizacao = document.getElementById("statusAtualizacao");
 
 let painelCarregando = false;
+let recarregamentoPendente = false;
 let ultimoCarregamento = 0;
 
 // =============================
@@ -211,7 +212,13 @@ btnSalvar.addEventListener("click", async () => {
 
 async function carregarPainel(mostrarErro = false){
 
-    if (painelCarregando) return;
+    // Em telemóveis é comum o utilizador mudar o mês enquanto a primeira
+    // consulta ainda está a terminar. Guarda essa intenção para que o painel
+    // atualize o último mês selecionado assim que ficar livre.
+    if (painelCarregando) {
+        recarregamentoPendente = true;
+        return;
+    }
 
     painelCarregando = true;
     btnAtualizarPainel.disabled = true;
@@ -326,6 +333,11 @@ async function carregarPainel(mostrarErro = false){
         painelCarregando = false;
         btnAtualizarPainel.disabled = false;
         btnAtualizarPainel.innerHTML = "🔄 Atualizar tela";
+
+        if (recarregamentoPendente) {
+            recarregamentoPendente = false;
+            carregarPainel(mostrarErro);
+        }
 
     }
 
