@@ -287,12 +287,12 @@ async function carregarPainel(mostrarErro = false){
 
     fundoSeparadoTotal.innerHTML = moeda(fundoAtual);
 
-    // Um pagamento sai do fundo; portanto, o mesmo valor não pode reduzir
-    // "Falta separar" duas vezes. O que já está coberto é o pagamento feito
-    // mais o saldo que ainda está disponível no fundo.
+    // "Falta separar" mede somente o que ainda não foi transferido para o
+    // fundo. Pagamentos já feitos são controlados separadamente e não mudam
+    // este cartão.
     const faltaSeparar = Math.max(
         0,
-        (isaiasMes + evelynMes) - totalPago - fundoAtual
+        (isaiasMes + evelynMes) - fundoMes
     );
 
     faltaSepararTotal.innerHTML = moeda(faltaSeparar);
