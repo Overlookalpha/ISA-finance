@@ -1,0 +1,164 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+ 
+<head>    
+    
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ISA Finance - Usuário</title>
+
+<link rel="stylesheet" href="css/style.css?v=mobile-compact-1">
+
+</head>
+
+<body>
+
+<header class="topo">
+
+<div class="logo">
+
+<h1>💰 ISA Finance</h1>
+
+<span id="nomeUsuario">
+Carregando...
+</span>
+<small id="tipoUsuario">Carregando...</small>
+ 
+</div>
+
+<div class="acoesTopo">
+
+<select id="mesSelecionado">
+
+    <option value="2026-06">Junho / 2026</option>
+    <option value="2026-07" selected>Julho / 2026</option>
+    <option value="2026-08">Agosto / 2026</option>
+    <option value="2026-09">Setembro / 2026</option>
+    <option value="2026-10">Outubro / 2026</option>
+    <option value="2026-11">Novembro / 2026</option>
+    <option value="2026-12">Dezembro / 2026</option>
+
+    <option value="2027-01">Janeiro / 2027</option>
+    <option value="2027-02">Fevereiro / 2027</option>
+    <option value="2027-03">Março / 2027</option>
+    <option value="2027-04">Abril / 2027</option>
+    <option value="2027-05">Maio / 2027</option>
+    <option value="2027-06">Junho / 2027</option>
+    <option value="2027-07">Julho / 2027</option>
+    <option value="2027-08">Agosto / 2027</option>
+    <option value="2027-09">Setembro / 2027</option>
+    <option value="2027-10">Outubro / 2027</option>
+    <option value="2027-11">Novembro / 2027</option>
+    <option value="2027-12">Dezembro / 2027</option>
+
+</select>
+
+<button class="btnSair" onclick="sair()">
+Sair
+</button>
+
+</div>
+
+</header>
+
+<nav class="tabs-principais" aria-label="Áreas do usuário">
+<button class="aba ativa" type="button" data-aba="resumo">⌂ <span>Resumo</span></button>
+<button class="aba" type="button" data-aba="saque">€ <span>Saque</span></button>
+<button class="aba" type="button" data-aba="historico">☷ <span>Histórico</span></button>
+</nav>
+
+<main class="container">
+
+<section class="area-aba ativa" data-area="resumo"><div class="cards">
+
+<div class="card">
+<h3>💰 Total Gerado</h3>
+<h2 id="totalGerado">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>🏦 Fundo Separado</h3>
+<h2 id="fundoSeparado">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>⏳ Falta Separar</h3>
+<h2 id="faltaSeparar">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>💳 Disponível para Saque</h3>
+<h2 id="saldoDisponivel">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>💸 Total Sacado</h3>
+<h2 id="totalSacado">€ 0,00</h2>
+</div>
+
+<div class="card">
+<h3>📊 Percentual Atual</h3>
+<h2 id="percentualAtual">12%</h2>
+</div>
+
+</div>
+</section>
+
+<section class="historico area-aba" data-area="historico">
+
+<h2>📜 Histórico de Saques</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Data</th>
+<th>Valor</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="listaSaques">
+
+</tbody>
+
+</table>
+
+</section>
+
+<section class="area-aba saque-usuario" data-area="saque"><div style="margin-top:30px;text-align:center;">
+<input
+    type="number"
+    id="valorSaque"
+    placeholder="Digite o valor do saque (€)"
+    min="0.01"
+    step="0.01"
+    style="width:300px;max-width:90%;margin-bottom:15px;">
+<button id="btnSolicitarSaque">
+
+💸 Solicitar Saque
+
+</button>
+
+</div>
+</section>
+
+</main>
+
+<footer class="rodape-fixo">
+<button class="aba ativa" type="button" data-aba="resumo">⌂<span>Início</span></button>
+<button class="aba" type="button" data-aba="saque">€<span>Saque</span></button>
+<button class="aba" type="button" data-aba="historico">☷<span>Histórico</span></button>
+</footer>
+
+<script type="module" src="js/usuario.js"></script>
+
+</body>
+
+</html>
