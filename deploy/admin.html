@@ -1,0 +1,228 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ISA Finance - Administração</title>
+
+<link rel="stylesheet" href="css/style.css?v=mobile-compact-1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<header class="topo">
+
+    <h1>💰 ISA Finance</h1>
+<span id="nomeUsuario">
+Carregando...
+</span>
+
+<small id="tipoUsuario">
+Carregando...
+</small>
+    <div style="display:flex;align-items:center;gap:10px;">
+
+        <input
+            type="month"
+            id="mesReferencia"
+        >
+
+        <button type="button" id="btnAtualizarPainel" class="btnAtualizar">
+            🔄 Atualizar tela
+        </button>
+
+        <button type="button" id="btnRelatorios" class="btnRelatorios">
+            📊 Relatórios
+        </button>
+
+        <button class="btnSair" onclick="sair()">
+            Sair
+        </button>
+
+        <small id="statusAtualizacao" aria-live="polite"></small>
+
+    </div>
+
+</header>
+
+<nav class="tabs-principais" aria-label="Áreas do painel">
+    <button class="aba ativa" type="button" data-aba="visao">⌂ <span>Visão geral</span></button>
+    <button class="aba" type="button" data-aba="lancamentos">＋ <span>Lançamentos</span></button>
+    <button class="aba" type="button" data-aba="clientes">♙ <span>Clientes</span></button>
+    <button class="aba" type="button" data-aba="historico">☷ <span>Histórico</span></button>
+</nav>
+
+<main class="container dashboard-main">
+
+    <section class="area-aba ativa" data-area="visao">
+    <section class="cards">
+
+        <div class="card">
+            <h3>Total de Entradas</h3>
+            <h2 id="totalEntradas">€ 0,00</h2>
+        </div>
+
+        <div class="card">
+            <h3>Empresa</h3>
+            <h2 id="empresa">€ 0,00</h2>
+        </div>
+
+        <div class="card">
+            <h3>Isaías</h3>
+            <h2 id="isaias">€ 0,00</h2>
+        </div>
+
+        <div class="card">
+            <h3>Evelyn</h3>
+            <h2 id="evelyn">€ 0,00</h2>
+        </div>
+   <div class="card">
+    <h3>🏦 Fundo Separado</h3>
+    <h2 id="fundoSeparadoTotal">€ 0,00</h2>
+   </div>
+
+       <div class="card">
+    <h3>⏳ Falta Separar</h3>
+    <h2 id="faltaSepararTotal">€ 0,00</h2>
+   </div>
+        
+    </section>
+
+    <section class="dashboard-grid">
+        <article class="painel">
+            <div class="section-head"><div><span class="eyebrow">VISÃO GERAL</span><h2>Desempenho do mês</h2></div><span id="periodoGrafico" class="pill">Este mês</span></div>
+            <canvas id="graficoDesempenho" aria-label="Gráfico de desempenho financeiro"></canvas>
+        </article>
+        <article class="painel insight-card"><span class="eyebrow">DESTAQUE</span><h2 id="insightTitulo">A carregar dados…</h2><p id="insightTexto">Os números do mês aparecerão aqui.</p></article>
+    </section>
+
+    <section id="relatoriosFinanceiros" class="relatorios-financeiros">
+        <article class="painel">
+            <div class="section-head"><div><span class="eyebrow">EVOLUÇÃO</span><h2>Faturamento dos últimos meses</h2></div><span class="pill">Histórico</span></div>
+            <canvas id="graficoMensal" aria-label="Faturamento por mês"></canvas>
+        </article>
+        <article class="painel ranking-clientes">
+            <div class="section-head"><div><span class="eyebrow">CLIENTES</span><h2>Melhores clientes</h2></div><span class="pill">Top 10</span></div>
+            <ol id="rankingClientes" class="ranking-lista"><li>A carregar histórico…</li></ol>
+        </article>
+    </section>
+    </section>
+
+    <section class="painel clientes-panel area-aba" data-area="clientes">
+        <div class="section-head"><div><span class="eyebrow">CLIENTES</span><h2>Pesquisa e observações</h2></div></div>
+        <div class="cliente-form">
+            <input id="buscaCliente" placeholder="Pesquisar por nome, telefone ou e-mail">
+            <button type="button" id="btnBuscarCliente">Pesquisar</button>
+        </div>
+        <div id="resultadoCliente" class="resultado-cliente">Pesquise um cliente para consultar ou guardar uma observação.</div>
+    </section>
+
+    <section class="novaEntrada area-aba" data-area="lancamentos">
+
+        <h2>Nova Entrada</h2>
+
+        <input
+    type="number"
+    id="valor"
+    placeholder="Valor Recebido (€)"
+>
+
+<input
+    type="text"
+    id="descricao"
+    placeholder="Descrição"
+>
+
+<input type="text" id="clienteEntrada" list="clientesEntrada" placeholder="Cliente (opcional)">
+<datalist id="clientesEntrada"></datalist>
+
+<textarea id="observacaoEntrada" placeholder="Observação desta entrada (opcional)"></textarea>
+
+        <button id="salvarEntrada">
+
+            Salvar Entrada
+
+        </button>
+
+    <hr>
+
+<h3>🏦 Fundo Separado</h3>
+
+<input
+    type="number"
+    id="valorFundo"
+    placeholder="Valor para separar (€)"
+>
+
+<button id="btnAdicionarFundo">
+    Adicionar ao Fundo
+</button>
+        
+    </section>
+
+    <section class="historico area-aba" data-area="historico">
+
+        <h2>Histórico</h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Data</th>
+
+                    <th>Descrição</th>
+
+                    <th>Observação</th>
+
+                    <th>Valor</th>
+
+                    <th>Empresa</th>
+
+                    <th>Isaías</th>
+
+                    <th>Evelyn</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="listaEntradas">
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+</main>
+
+<footer class="rodape-fixo">
+    <button class="aba ativa" type="button" data-aba="visao">⌂<span>Início</span></button>
+    <button class="aba" type="button" data-aba="lancamentos">＋<span>Adicionar</span></button>
+    <button class="aba" type="button" data-aba="clientes">♙<span>Clientes</span></button>
+    <button class="aba" type="button" data-aba="historico">☷<span>Histórico</span></button>
+</footer>
+
+ <script type="module">
+
+import { verificarLogin, sair } from "./js/auth.js";
+
+window.sair = sair;
+
+verificarLogin();
+
+</script>
+
+<script type="module" src="js/admin.js?v=mobile-month-refresh-1"></script>
+
+</body>
+
+</html> 

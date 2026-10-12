@@ -14,7 +14,8 @@ import {
     query,
     where,
     Timestamp,
-    serverTimestamp
+    serverTimestamp,
+    runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { verificarLogin } from "./auth.js";
 
@@ -84,6 +85,7 @@ const btnAtualizarPainel = document.getElementById("btnAtualizarPainel");
 const statusAtualizacao = document.getElementById("statusAtualizacao");
 
 let painelCarregando = false;
+let recarregamentoPendente = false;
 let ultimoCarregamento = 0;
 
 // =============================
@@ -141,18 +143,26 @@ btnSalvar.addEventListener("click", async () => {
 
     try {
 
-        const config = await carregarConfiguracoes();
-
         const percentual = 12;
 
         const valorUsuario = valor * 0.12;
 
         const valorEmpresa = valor - (valorUsuario * 2);
 
-        // Gravar a entrada e atualizar os totais não dependem um
-        // do outro, então rodam ao mesmo tempo em vez de em fila.
-        await Promise.all([
-            addDoc(collection(db, "movimentacoes"), {
+        // O lançamento e os saldos precisam ser uma única operação: duas
+        // entradas salvas ao mesmo tempo não podem sobrescrever os totais.
+        await runTransaction(db, async (transaction) => {
+            const configRef = doc(db, "configuracoes", "geral");
+            const configSnap = await transaction.get(configRef);
+
+            if (!configSnap.exists()) {
+                throw new Error("Configuração geral não encontrada.");
+            }
+
+            const config = configSnap.data();
+            const movimentacaoRef = doc(collection(db, "movimentacoes"));
+
+            transaction.set(movimentacaoRef, {
                 tipo: "entrada",
                 valor: valor,
                 descricao: descricao,
@@ -164,14 +174,15 @@ btnSalvar.addEventListener("click", async () => {
                 isaias: valorUsuario,
                 evelyn: valorUsuario,
                 criadoEm: serverTimestamp()
-            }),
-            updateDoc(doc(db, "configuracoes", "geral"), {
+            });
+
+            transaction.update(configRef, {
                 totalEntradas: (config.totalEntradas || 0) + valor,
                 empresa: (config.empresa || 0) + valorEmpresa,
                 saldoIsaias: (config.saldoIsaias || 0) + valorUsuario,
                 saldoEvellyn: (config.saldoEvellyn || 0) + valorUsuario
-            })
-        ]);
+            });
+        });
 
         txtValor.value = "";
         txtDescricao.value = "";
@@ -201,7 +212,13 @@ btnSalvar.addEventListener("click", async () => {
 
 async function carregarPainel(mostrarErro = false){
 
-    if (painelCarregando) return;
+    // Em telemóveis é comum o utilizador mudar o mês enquanto a primeira
+    // consulta ainda está a terminar. Guarda essa intenção para que o painel
+    // atualize o último mês selecionado assim que ficar livre.
+    if (painelCarregando) {
+        recarregamentoPendente = true;
+        return;
+    }
 
     painelCarregando = true;
     btnAtualizarPainel.disabled = true;
@@ -277,6 +294,9 @@ async function carregarPainel(mostrarErro = false){
 
     fundoSeparadoTotal.innerHTML = moeda(fundoAtual);
 
+    // "Falta separar" mede somente o que ainda não foi transferido para o
+    // fundo. Pagamentos já feitos são controlados separadamente e não mudam
+    // este cartão.
     const faltaSeparar = Math.max(
         0,
         (isaiasMes + evelynMes) - fundoMes
@@ -313,6 +333,11 @@ async function carregarPainel(mostrarErro = false){
         painelCarregando = false;
         btnAtualizarPainel.disabled = false;
         btnAtualizarPainel.innerHTML = "🔄 Atualizar tela";
+
+        if (recarregamentoPendente) {
+            recarregamentoPendente = false;
+            carregarPainel(mostrarErro);
+        }
 
     }
 
