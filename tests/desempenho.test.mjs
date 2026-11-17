@@ -16,3 +16,28 @@ test('totais incluem recebimentos sem cliente, sem inventar associação',()=>{
 const r=resumirPeriodo([m('',100,2026,11),m('Ana',50,2026,11)],'mensal','2026-11');assert.equal(r.total,150);assert.equal(r.ticket,75);assert.equal(r.clientes.length,1);
 });
 test('virada de ano e comparação anual',()=>{assert.equal(periodoAnterior('mensal','2026-01'),'2025-12');assert.equal(periodoAnterior('anual','2026'),'2025');});
+
+import {progressoMeta,apurarLucro,clientesSemRetorno} from '../js/desempenho.mjs';
+test('meta não definida, meta alcançada e progresso acima de 100%',()=>{
+assert.equal(progressoMeta(100,0).definida,false);
+assert.deepEqual(progressoMeta(120,100),{definida:true,percentual:120,barra:100,falta:0});
+assert.equal(progressoMeta(45.5,100).falta,54.5);
+});
+test('lucro desconta partes e despesas uma vez, permite prejuízo',()=>{
+assert.equal(apurarLucro(1000,200,240).lucro,560);
+assert.equal(apurarLucro(100,120,24).lucro,-44);
+assert.equal(apurarLucro(0.3,0.1,0.1).lucro,0.1);
+});
+test('sem intervalos anteriores usa 30 dias, sem inventar ausentes',()=>{
+const hoje=new Date(2026,10,17),entrada=(nome,data)=>({clienteNome:nome,valor:10,data});
+const r=clientesSemRetorno([entrada('Ana',new Date(2026,9,18)),entrada('Bia',new Date(2026,9,19)),entrada('Futuro',new Date(2026,11,1))],hoje);
+assert.equal(r.length,1);assert.equal(r[0].nome,'Ana');assert.equal(r[0].prazo,30);assert.equal(r[0].padrao,true);
+});
+test('aprende mediana de retorno, ignora vários pagamentos no mesmo dia',()=>{
+const entrada=data=>({clienteNome:'Ana',valor:10,data});
+const r=clientesSemRetorno([entrada(new Date(2026,9,1)),entrada(new Date(2026,9,11)),entrada(new Date(2026,9,11,12)),entrada(new Date(2026,9,21))],new Date(2026,10,1));
+assert.equal(r[0].prazo,10);assert.equal(r[0].intervalos,2);assert.equal(r[0].dias,11);
+});
+test('cliente com ciclo longo não é avisado automaticamente aos 30 dias',()=>{
+const r=clientesSemRetorno([{clienteNome:'Ana',valor:10,data:new Date(2026,5,1)},{clienteNome:'Ana',valor:10,data:new Date(2026,7,1)}],new Date(2026,8,1));assert.equal(r.length,0);
+});

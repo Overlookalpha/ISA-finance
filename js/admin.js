@@ -1,3 +1,4 @@
+import { iniciarGestao } from "./gestao.mjs";
 import { normalizarCliente, resumirPeriodo, periodoAnterior } from "./desempenho.mjs";
 // =========================================
 // ISA Finance - Admin
@@ -88,6 +89,7 @@ const statusAtualizacao = document.getElementById("statusAtualizacao");
 let painelCarregando = false;
 let recarregamentoPendente = false;
 let ultimoCarregamento = 0;
+const gestao = iniciarGestao({db,auth,mesReferencia,atualizarPainel:()=>carregarPainel(),moeda});
 
 // =============================
 // FORMATA MOEDA
@@ -597,6 +599,7 @@ async function carregarRelatorios() {
     rankingAno.replaceChildren(...anos.map(ano=>{const op=document.createElement("option");op.value=ano;op.textContent=ano;return op;}));
     rankingAno.value = anos.includes(anoAnterior) ? anoAnterior : mesReferencia.value.slice(0,4);
     atualizarRanking();
+    await gestao.carregar(mesReferencia.value,movimentosDesempenho);
 }
 
 document.getElementById("btnRelatorios").addEventListener("click", () => document.getElementById("relatoriosFinanceiros").scrollIntoView({behavior:"smooth"}));

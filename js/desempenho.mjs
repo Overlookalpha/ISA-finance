@@ -28,3 +28,35 @@ export function periodoAnterior(modo, periodo) {
   const [ano,mes] = periodo.split("-").map(Number), d = new Date(ano, mes-2, 1);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
 }
+
+// Indicadores de gestão; despesas nunca alteram os saldos de distribuição.
+export function progressoMeta(recebido, meta) {
+  if (!(meta > 0) || !Number.isFinite(meta)) return {definida:false, percentual:0, barra:0, falta:0};
+  const percentual = recebido / meta * 100;
+  return {definida:true, percentual, barra:Math.min(100,Math.max(0,percentual)), falta:Math.max(0,Math.round((meta-recebido)*100)/100)};
+}
+export function apurarLucro(recebido, despesas, partes = 0) {
+  const centavos = v => Math.round(Number(v || 0)*100);
+  const lucro = (centavos(recebido)-centavos(despesas)-centavos(partes))/100;
+  return {lucro, margem:recebido > 0 ? lucro/recebido*100 : null};
+}
+export function clientesSemRetorno(movimentos, referencia = new Date()) {
+  const diaNumero = d => Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);
+  const hoje = diaNumero(referencia), historicos = new Map();
+  for (const mov of movimentos) {
+    const data=mov.data;
+    if (!(data instanceof Date) || !Number.isFinite(data.getTime()) || mov.tipo === "fundo" || !(Number(mov.valor)>0) || diaNumero(data)>hoje) continue;
+    const chave=normalizarCliente(mov.clienteNome);if(!chave)continue;
+    const c=historicos.get(chave)||{nome:mov.clienteNome.trim(),chave,dias:new Map()};
+    c.dias.set(diaNumero(data),data);historicos.set(chave,c);
+  }
+  const resultados=[];
+  for(const c of historicos.values()){
+    const dias=[...c.dias.keys()].sort((a,b)=>a-b), intervalos=dias.slice(1).map((d,i)=>d-dias[i]).sort((a,b)=>a-b);
+    const meio=Math.floor(intervalos.length/2);
+    const habitual=intervalos.length ? Math.ceil(intervalos.length%2 ? intervalos[meio] : (intervalos[meio-1]+intervalos[meio])/2) : 30;
+    const ultima=c.dias.get(dias[dias.length-1]), semVoltar=hoje-dias[dias.length-1];
+    if(semVoltar>=habitual) resultados.push({nome:c.nome,chave:c.chave,ultima,dias:semVoltar,prazo:habitual,intervalos:intervalos.length,padrao:intervalos.length===0});
+  }
+  return resultados.sort((a,b)=>(b.dias-b.prazo)-(a.dias-a.prazo) || a.nome.localeCompare(b.nome));
+}

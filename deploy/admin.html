@@ -9,7 +9,7 @@
 
 <title>ISA Finance - Administração</title>
 
-<link rel="stylesheet" href="css/style.css?v=ranking-desempenho-2">
+<link rel="stylesheet" href="css/style.css?v=metas-lucro-retorno-2">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
@@ -94,6 +94,25 @@ Carregando...
         
     </section>
 
+    <section class="gestao-grid">
+        <article class="painel meta-mensal">
+            <span class="eyebrow">OBJETIVO DO MÊS</span><h2>Meta de recebimentos</h2>
+            <p id="metaPeriodo" class="ajuda-campo"></p>
+            <form id="formMeta" class="gestao-form"><label>Meta mensal (€)<input id="metaValor" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Defina o objetivo"></label><button id="salvarMeta" type="submit">Guardar meta</button></form><p class="status-gestao ajuda-campo" role="status"></p>
+            <progress id="metaBarra" max="100" value="0" aria-label="Progresso da meta mensal"></progress>
+            <p id="metaResumo" aria-live="polite">A carregar meta…</p><small class="ajuda-campo">Use 0 para retirar a meta deste mês. A meta não altera os recebimentos.</small>
+        </article>
+        <article class="painel resultado-mensal">
+            <span class="eyebrow">RESULTADO DO MÊS</span><h2>Recebimentos e lucro</h2>
+            <dl class="resultado-valores"><div><dt>Valor recebido</dt><dd id="lucroRecebido">—</dd></div><div><dt>Despesas registadas</dt><dd id="lucroDespesas">—</dd></div><div id="linhaPartesLucro" hidden><dt>Partes de Isaías e Evelyn</dt><dd id="lucroPartes">—</dd></div><div class="lucro-destaque"><dt id="rotuloLucro">Lucro após pagamentos e despesas</dt><dd id="lucroTotal">—</dd></div></dl>
+            <p id="lucroDetalhe" class="ajuda-campo" aria-live="polite"></p>
+            <p class="ajuda-campo">Cálculo: valor recebido − partes de Isaías/Evelyn − despesas registadas.</p>
+            <label class="confirmacao-despesas"><input type="checkbox" id="despesasConferidas">Conferi todas as despesas deste mês, incluindo taxas e impostos aplicáveis.</label>
+            <button id="guardarConferencia" type="button">Guardar conferência</button><p class="status-gestao ajuda-campo" role="status"></p>
+            <p class="ajuda-campo">O resultado depende das despesas registadas. Fundo separado e levantamentos não são descontados novamente.</p>
+        </article>
+    </section>
+
     <section class="dashboard-grid">
         <article class="painel">
             <div class="section-head"><div><span class="eyebrow">VISÃO GERAL</span><h2>Desempenho do mês</h2></div><span id="periodoGrafico" class="pill">Este mês</span></div>
@@ -128,6 +147,12 @@ Carregando...
             <button type="button" id="btnBuscarCliente">Pesquisar</button>
         </div>
         <div id="resultadoCliente" class="resultado-cliente">Pesquise um cliente para consultar ou guardar uma observação.</div>
+        <div class="retorno-clientes"><span class="eyebrow">RELACIONAMENTO</span><h2>Clientes que não voltaram</h2>
+            <p class="ajuda-campo">Prazo personalizado pelo histórico de cada cliente. Sem intervalos anteriores, aviso após 30 dias.</p>
+            <p id="retornoResumo" class="ajuda-campo" aria-live="polite">A carregar histórico…</p><ul id="clientesSemRetorno" class="lista-gestao"></ul>
+            <p class="ajuda-campo">Usa a mediana dos intervalos entre recebimentos em dias distintos até hoje. São indícios de retorno, não visitas confirmadas. Clientes sem histórico não são classificados como ausentes. Não são enviadas mensagens automaticamente.</p>
+        </div>
+
     </section>
 
     <section class="novaEntrada area-aba" data-area="lancamentos">
@@ -164,6 +189,19 @@ Carregando...
     Adicionar ao Fundo
 </button>
         
+    </section>
+
+    <section class="painel despesas-panel area-aba" data-area="lancamentos">
+        <span class="eyebrow">CUSTOS DO NEGÓCIO</span><h2>Registar despesa</h2>
+        <p class="ajuda-campo">Registe materiais, renda, serviços, taxas e impostos para apurar o resultado. Não inclua transferências para o fundo nem levantamentos já contabilizados.</p>
+        <form id="formDespesa" class="entrada-campos">
+            <label class="campo-entrada">Descrição<input id="despesaDescricao" maxlength="200" required placeholder="Ex.: materiais, renda ou taxa"></label>
+            <label class="campo-entrada">Valor (€)<input id="despesaValor" type="number" min="0.01" step="0.01" inputmode="decimal" required placeholder="0,00"></label>
+            <label class="campo-entrada">Data da despesa<input id="despesaData" type="date" required></label>
+            <button id="salvarDespesa" type="submit">Guardar despesa</button>
+        </form>
+        <p id="statusGestao" class="status-gestao ajuda-campo" role="status"></p>
+        <h3>Despesas do mês selecionado</h3><ul id="listaDespesas" class="lista-gestao"></ul>
     </section>
 
     <section class="historico area-aba" data-area="historico">
@@ -221,7 +259,7 @@ verificarLogin();
 
 </script>
 
-<script type="module" src="js/admin.js?v=ranking-desempenho-2"></script>
+<script type="module" src="js/admin.js?v=metas-lucro-retorno-2"></script>
 
 </body>
 
