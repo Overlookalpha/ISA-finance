@@ -41,3 +41,19 @@ assert.equal(r[0].prazo,10);assert.equal(r[0].intervalos,2);assert.equal(r[0].di
 test('cliente com ciclo longo não é avisado automaticamente aos 30 dias',()=>{
 const r=clientesSemRetorno([{clienteNome:'Ana',valor:10,data:new Date(2026,5,1)},{clienteNome:'Ana',valor:10,data:new Date(2026,7,1)}],new Date(2026,8,1));assert.equal(r.length,0);
 });
+
+import {analisarRetornoClientes} from '../js/desempenho.mjs';
+test('prazo manual só altera o cliente escolhido, preserva automático e padrão 30',()=>{
+const dados=[m('Ana',10,2026,8),m('Ana',10,2026,9),m('Bia',10,2026,9)],hoje=new Date(2026,10,17);
+const r=analisarRetornoClientes(dados,hoje,{'ana':100});
+assert.equal(r.find(c=>c.nome==='Ana').prazo,100);assert.equal(r.find(c=>c.nome==='Ana').prazoAutomatico,31);
+assert.equal(r.find(c=>c.nome==='Bia').prazo,30);
+assert.ok(!clientesSemRetorno(dados,hoje,{'ana':100}).some(c=>c.nome==='Ana'));
+assert.ok(clientesSemRetorno(dados,hoje,{'ana':0}).some(c=>c.nome==='Ana'));
+});
+test('prazo inválido ignora substituição e cliente sem atraso pode ser configurado',()=>{
+const dados=[m('Ana',10,2026,11)],hoje=new Date(2026,10,17);
+assert.equal(analisarRetornoClientes(dados,hoje,{'ana':-1})[0].prazo,30);
+assert.equal(analisarRetornoClientes(dados,hoje,{'ana':2})[0].prazo,2);
+assert.equal(clientesSemRetorno(dados,hoje,{'ana':2}).length,1);
+});

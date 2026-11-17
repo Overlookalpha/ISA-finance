@@ -18,3 +18,7 @@ Prévia visual conferida com dados fictícios, sem gravações no banco.
 - Despesas guardadas na coleção despesas, com data, descrição e montante. Anulação reversível; sem apagar registos. Qualquer alteração invalida a conferência de despesas do mês na mesma operação atómica.
 - O resultado aparece como provisório até o utilizador confirmar a conferência de despesas. Não representa lucro contabilístico independente dos registos introduzidos.
 - Verificações: nove testes de cálculos; prévia isolada com persistência simulada para guardar meta, conferir despesas, adicionar e anular despesa; layout mobile. Nenhuma transação financeira de teste foi gravada na produção.
+
+
+## Prazo manual por cliente
+Em Clientes → Clientes que não voltaram, escolha um cliente, introduza os dias e guarde. O ajuste é persistido em configuracoes/retorno-clientes, por nome normalizado, sem mudar recebimentos nem o histórico. Vazio ou Usar automático repõe o ciclo habitual calculado ou os 30 dias padrão. A seleção inclui também clientes que ainda não atingiram o prazo. Cálculo e gravação foram verificados em prévia isolada, sem alterar clientes reais.

@@ -40,7 +40,7 @@ export function apurarLucro(recebido, despesas, partes = 0) {
   const lucro = (centavos(recebido)-centavos(despesas)-centavos(partes))/100;
   return {lucro, margem:recebido > 0 ? lucro/recebido*100 : null};
 }
-export function clientesSemRetorno(movimentos, referencia = new Date()) {
+export function analisarRetornoClientes(movimentos, referencia = new Date(), prazosManuais = {}) {
   const diaNumero = d => Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);
   const hoje = diaNumero(referencia), historicos = new Map();
   for (const mov of movimentos) {
@@ -56,7 +56,13 @@ export function clientesSemRetorno(movimentos, referencia = new Date()) {
     const meio=Math.floor(intervalos.length/2);
     const habitual=intervalos.length ? Math.ceil(intervalos.length%2 ? intervalos[meio] : (intervalos[meio-1]+intervalos[meio])/2) : 30;
     const ultima=c.dias.get(dias[dias.length-1]), semVoltar=hoje-dias[dias.length-1];
-    if(semVoltar>=habitual) resultados.push({nome:c.nome,chave:c.chave,ultima,dias:semVoltar,prazo:habitual,intervalos:intervalos.length,padrao:intervalos.length===0});
+    const configurado = Object.prototype.hasOwnProperty.call(prazosManuais,c.chave) ? Number(prazosManuais[c.chave]) : 0;
+    const manual = Number.isInteger(configurado) && configurado >= 1 && configurado <= 3650;
+    resultados.push({nome:c.nome,chave:c.chave,ultima,dias:semVoltar,prazo:manual?configurado:habitual,prazoAutomatico:habitual,manual,intervalos:intervalos.length,padrao:intervalos.length===0});
   }
   return resultados.sort((a,b)=>(b.dias-b.prazo)-(a.dias-a.prazo) || a.nome.localeCompare(b.nome));
+}
+
+export function clientesSemRetorno(movimentos, referencia = new Date(), prazosManuais = {}) {
+  return analisarRetornoClientes(movimentos, referencia, prazosManuais).filter(c=>c.dias>=c.prazo);
 }

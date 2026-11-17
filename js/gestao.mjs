@@ -1,10 +1,12 @@
 import { collection, doc, getDoc, getDocs, query, where, setDoc, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { progressoMeta, apurarLucro, clientesSemRetorno } from './desempenho.mjs';
+import { progressoMeta, apurarLucro, analisarRetornoClientes, normalizarCliente } from './desempenho.mjs?v=prazo-manual-1';
 
 export function iniciarGestao({db, auth, mesReferencia, atualizarPainel, moeda}) {
     const el = id => document.getElementById(id);
     let versao = 0, mesCarregado = '', recebido = 0, partes = 0, despesas = [], configuracao = {}, ocupado = false;
     const refMes = mes => doc(db,'configuracoes','gestao-'+mes);
+    const refRetorno = doc(db,'configuracoes','retorno-clientes');
+    let historicoRetorno = [], prazosManuais = {}, retornoCarregado = false;
     const status = mensagem => { document.querySelectorAll('.status-gestao').forEach(no=>no.textContent=mensagem); };
     const hojeTexto = () => {const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
     const dataValida = texto => {if(!/^\d{4}-\d{2}-\d{2}$/.test(texto)) return false;const [a,m,d]=texto.split('-').map(Number),v=new Date(a,m-1,d);return v.getFullYear()===a && v.getMonth()===m-1 && v.getDate()===d;};
@@ -40,9 +42,9 @@ export function iniciarGestao({db, auth, mesReferencia, atualizarPainel, moeda})
         if(ocupado)return;
         if(!auth.currentUser){status('Inicie sessão para guardar.');return;}
         ocupado=true;
-        const botoes=[...document.querySelectorAll('#formMeta button,#guardarConferencia,#formDespesa button,#listaDespesas button')];botoes.forEach(b=>b.disabled=true);
+        const botoes=[...document.querySelectorAll('#formMeta button,#guardarConferencia,#formDespesa button,#listaDespesas button,#formPrazoRetorno button')];botoes.forEach(b=>b.disabled=true);
         try{await acao();}catch(erro){console.error('Erro ao guardar indicadores:',erro);status('Não foi possível guardar. Os campos foram mantidos; tente novamente.');}
-        finally{ocupado=false;botoes.forEach(b=>b.disabled=false);document.querySelectorAll('#listaDespesas button').forEach(b=>b.disabled=false);}
+        finally{ocupado=false;botoes.forEach(b=>b.disabled=false);document.querySelectorAll('#listaDespesas button').forEach(b=>b.disabled=false);ativarControlesRetorno();}
     }
     el('formMeta').addEventListener('submit',e=>{e.preventDefault();if(mesCarregado!==mesReferencia.value)return status('Aguarde o carregamento do mês antes de guardar a meta.');const valor=Number(el('metaValor').value),mes=mesReferencia.value;if(!Number.isFinite(valor)||valor<0)return status('Informe uma meta válida ou 0 para retirar.');executar(async()=>{await setDoc(refMes(mes),{meta:Math.round(valor*100)/100},{merge:true});status('Meta guardada para '+mes+'.');await atualizarPainel();});});
     el('guardarConferencia').addEventListener('click',()=>{if(mesCarregado!==mesReferencia.value)return status('Aguarde o carregamento das despesas deste mês.');const mes=mesReferencia.value,conferida=el('despesasConferidas').checked;executar(async()=>{await setDoc(refMes(mes),{despesasConferidas:conferida,conferidoEm:serverTimestamp()},{merge:true});status('Conferência guardada para '+mes+'.');await atualizarPainel();});});
@@ -51,6 +53,31 @@ export function iniciarGestao({db, auth, mesReferencia, atualizarPainel, moeda})
         if(!Number.isFinite(valor)||valor<=0||!descricao||!dataValida(data))return status('Preencha descrição, valor positivo e uma data válida.');
         executar(async()=>{const batch=writeBatch(db);batch.set(doc(collection(db,'despesas')),{descricao,valor:Math.round(valor*100)/100,data,anulada:false,criadoEm:serverTimestamp(),criadoPor:auth.currentUser.uid});batch.set(refMes(data.slice(0,7)),{despesasConferidas:false},{merge:true});await batch.commit();el('despesaDescricao').value='';el('despesaValor').value='';status('Despesa guardada para '+data.split('-').reverse().join('/')+'. Confira novamente os custos do mês.');await atualizarPainel();});
     });
+    function ativarControlesRetorno(){
+        const escolhido=historicoRetorno.some(c=>c.chave===el('retornoClienteAjuste').value);
+        el('retornoClienteAjuste').disabled=!retornoCarregado || ocupado;
+        ['retornoPrazoManual','guardarPrazoRetorno','reporPrazoRetorno'].forEach(id=>el(id).disabled=!retornoCarregado || !escolhido || ocupado);
+    }
+    function mostrarPrazoSelecionado(){
+        const cliente=historicoRetorno.find(c=>c.chave===el('retornoClienteAjuste').value);
+        el('retornoPrazoManual').value=cliente?.manual ? cliente.prazo : '';
+        el('retornoPrazoDetalhe').textContent=cliente ? `Automático para ${cliente.nome}: ${cliente.prazoAutomatico} dias (${cliente.padrao ? 'padrão, sem intervalos anteriores' : 'histórico de '+cliente.intervalos+' intervalo(s)'}). ${cliente.manual ? 'Prazo manual ativo: '+cliente.prazo+' dias.' : 'Automático ativo.'} O histórico continua preservado.` : 'Escolha um cliente. Um prazo manual aplica-se apenas a ele; vazio mantém o automático.';
+        ativarControlesRetorno();
+    }
+    function guardarPrazoRetorno(automatico){
+        const cliente=historicoRetorno.find(c=>c.chave===el('retornoClienteAjuste').value);
+        if(!retornoCarregado || !cliente)return status('Escolha um cliente após carregar o histórico.');
+        const texto=el('retornoPrazoManual').value.trim(),prazo=automatico || texto==='' ? 0 : Number(texto);
+        if(!Number.isInteger(prazo) || prazo<0 || prazo>3650 || (texto!=='' && !automatico && prazo<1))return status('Informe um prazo inteiro entre 1 e 3650 dias, ou deixe vazio para usar o automático.');
+        executar(async()=>{
+            await setDoc(refRetorno,{prazosManuais:{[normalizarCliente(cliente.nome)]:prazo}},{merge:true});
+            status(prazo ? `Prazo de ${prazo} dias guardado para ${cliente.nome}.` : `Retorno automático reposto para ${cliente.nome}.`);
+            await atualizarPainel();
+        });
+    }
+    el('retornoClienteAjuste').addEventListener('change',mostrarPrazoSelecionado);
+    el('formPrazoRetorno').addEventListener('submit',e=>{e.preventDefault();guardarPrazoRetorno(false);});
+    el('reporPrazoRetorno').addEventListener('click',()=>guardarPrazoRetorno(true));
     return {
         async carregar(mes,movimentos) {
             const pedido=++versao;
@@ -73,10 +100,29 @@ export function iniciarGestao({db, auth, mesReferencia, atualizarPainel, moeda})
                 el('lucroDetalhe').textContent='Despesas não consultadas; nenhum lucro foi confirmado.';
                 el('listaDespesas').textContent='Não foi possível carregar as despesas.';
             }
-            const ausentes=clientesSemRetorno(movimentos),lista=el('clientesSemRetorno');lista.replaceChildren();
-            el('retornoResumo').textContent=`${ausentes.length} cliente(s) no prazo de acompanhamento · referência: ${new Date().toLocaleDateString('pt-PT')}.`;
-            ausentes.forEach(c=>{const li=document.createElement('li'),texto=document.createElement('span'),titulo=document.createElement('strong'),detalhe=document.createElement('small');titulo.textContent=c.nome;detalhe.textContent=`Último recebimento: ${c.ultima.toLocaleDateString('pt-PT')} · ${c.dias} dias sem voltar. ${c.padrao ? 'Prazo padrão: 30 dias (sem intervalos anteriores).' : 'Retorno habitual: '+c.prazo+' dias, com base em '+c.intervalos+' intervalo(s).'}`;texto.append(titulo,detalhe);li.appendChild(texto);lista.appendChild(li);});
-            if(!ausentes.length){const li=document.createElement('li');li.textContent='Nenhum cliente com histórico atingiu o prazo de acompanhamento.';lista.appendChild(li);}
+            try {
+                const ajuste=await getDoc(refRetorno);
+                if(pedido!==versao || mesReferencia.value!==mes)return;
+                prazosManuais=ajuste.exists() ? (ajuste.data().prazosManuais || {}) : {};
+                historicoRetorno=analisarRetornoClientes(movimentos,new Date(),prazosManuais);
+                retornoCarregado=true;
+                const anterior=el('retornoClienteAjuste').value;
+                el('retornoClienteAjuste').replaceChildren();
+                const inicial=document.createElement('option');inicial.value='';inicial.textContent='Escolha um cliente';el('retornoClienteAjuste').appendChild(inicial);
+                historicoRetorno.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(c=>{const op=document.createElement('option');op.value=c.chave;op.textContent=c.nome;el('retornoClienteAjuste').appendChild(op);});
+                el('retornoClienteAjuste').value=historicoRetorno.some(c=>c.chave===anterior)?anterior:'';
+                mostrarPrazoSelecionado();
+                const ausentes=historicoRetorno.filter(c=>c.dias>=c.prazo),lista=el('clientesSemRetorno');lista.replaceChildren();
+                el('retornoResumo').textContent=`${ausentes.length} cliente(s) no prazo de acompanhamento · referência: ${new Date().toLocaleDateString('pt-PT')}.`;
+                ausentes.forEach(c=>{const li=document.createElement('li'),texto=document.createElement('span'),titulo=document.createElement('strong'),detalhe=document.createElement('small');titulo.textContent=c.nome;detalhe.textContent=`Último recebimento: ${c.ultima.toLocaleDateString('pt-PT')} · ${c.dias} dias sem voltar. ${c.manual ? 'Prazo manual: '+c.prazo+' dias. Automático: '+c.prazoAutomatico+' dias.' : c.padrao ? 'Prazo padrão: 30 dias (sem intervalos anteriores).' : 'Retorno habitual: '+c.prazo+' dias, com base em '+c.intervalos+' intervalo(s).'}`;texto.append(titulo,detalhe);li.appendChild(texto);lista.appendChild(li);});
+                if(!ausentes.length){const li=document.createElement('li');li.textContent='Nenhum cliente com histórico atingiu o prazo de acompanhamento.';lista.appendChild(li);}
+            } catch(erro) {
+                if(pedido!==versao || mesReferencia.value!==mes)return;
+                retornoCarregado=false;ativarControlesRetorno();
+                console.error('Erro ao carregar prazos de retorno:',erro);
+                el('retornoResumo').textContent='Não foi possível consultar os prazos guardados. Atualize o painel.';
+                el('clientesSemRetorno').replaceChildren();
+            }
         }
     };
 }

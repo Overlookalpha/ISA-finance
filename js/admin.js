@@ -1,5 +1,5 @@
-import { iniciarGestao } from "./gestao.mjs";
-import { normalizarCliente, resumirPeriodo, periodoAnterior } from "./desempenho.mjs";
+import { iniciarGestao } from "./gestao.mjs?v=prazo-manual-1";
+import { normalizarCliente, resumirPeriodo, periodoAnterior } from "./desempenho.mjs?v=prazo-manual-1";
 // =========================================
 // ISA Finance - Admin
 // =========================================

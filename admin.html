@@ -9,7 +9,7 @@
 
 <title>ISA Finance - Administração</title>
 
-<link rel="stylesheet" href="css/style.css?v=metas-lucro-retorno-2">
+<link rel="stylesheet" href="css/style.css?v=prazo-manual-retorno-1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
@@ -149,6 +149,14 @@ Carregando...
         <div id="resultadoCliente" class="resultado-cliente">Pesquise um cliente para consultar ou guardar uma observação.</div>
         <div class="retorno-clientes"><span class="eyebrow">RELACIONAMENTO</span><h2>Clientes que não voltaram</h2>
             <p class="ajuda-campo">Prazo personalizado pelo histórico de cada cliente. Sem intervalos anteriores, aviso após 30 dias.</p>
+            <form id="formPrazoRetorno" class="gestao-form">
+                <label>Cliente<select id="retornoClienteAjuste" disabled><option value="">A carregar clientes…</option></select></label>
+                <label>Prazo manual (dias)<input id="retornoPrazoManual" type="number" min="1" max="3650" step="1" inputmode="numeric" placeholder="Automático" disabled></label>
+                <button id="guardarPrazoRetorno" type="submit" disabled>Guardar prazo</button>
+                <button id="reporPrazoRetorno" type="button" disabled>Usar automático</button>
+            </form>
+            <p id="retornoPrazoDetalhe" class="ajuda-campo" aria-live="polite">O prazo manual aplica-se só ao cliente escolhido. Deixe vazio para usar o automático.</p>
+            <p class="status-gestao ajuda-campo" role="status"></p>
             <p id="retornoResumo" class="ajuda-campo" aria-live="polite">A carregar histórico…</p><ul id="clientesSemRetorno" class="lista-gestao"></ul>
             <p class="ajuda-campo">Usa a mediana dos intervalos entre recebimentos em dias distintos até hoje. São indícios de retorno, não visitas confirmadas. Clientes sem histórico não são classificados como ausentes. Não são enviadas mensagens automaticamente.</p>
         </div>
@@ -259,7 +267,7 @@ verificarLogin();
 
 </script>
 
-<script type="module" src="js/admin.js?v=metas-lucro-retorno-2"></script>
+<script type="module" src="js/admin.js?v=prazo-manual-retorno-1"></script>
 
 </body>
 
