@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "ISA Finance",
+  "short_name": "ISA Finance",
+  "description": "Gestão de recebimentos, clientes, metas e despesas.",
+  "lang": "pt-PT",
+  "start_url": "./login.html?origem=ecra-inicial",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f5fa",
+  "theme_color": "#f7f5fa",
+  "icons": [
+    {
+      "src": "assets/icons/isa-finance-v1.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
