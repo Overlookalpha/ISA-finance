@@ -9,7 +9,7 @@
 
 <title>ISA Finance - Administração</title>
 
-<link rel="stylesheet" href="css/style.css?v=mobile-compact-1">
+<link rel="stylesheet" href="css/style.css?v=ranking-desempenho-2">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
@@ -108,9 +108,16 @@ Carregando...
             <canvas id="graficoMensal" aria-label="Faturamento por mês"></canvas>
         </article>
         <article class="painel ranking-clientes">
-            <div class="section-head"><div><span class="eyebrow">CLIENTES</span><h2>Melhores clientes</h2></div><span class="pill">Top 10</span></div>
+            <div class="section-head"><div><span class="eyebrow">CLIENTES</span><h2>Top clientes por valor recebido</h2></div><span id="rankingPeriodoResumo" class="pill">Top 10 · mensal</span></div>
+            <div class="ranking-filtros">
+                <label>Ver ranking<select id="rankingModo"><option value="mensal">Mensal</option><option value="anual">Anual</option></select></label>
+                <label id="rankingMesLabel">Mês<input type="month" id="rankingMes"></label>
+                <label id="rankingAnoLabel" hidden>Ano<select id="rankingAno"></select></label>
+            </div>
+            <p class="ajuda-campo">Estrelas de desempenho: 60% do valor recebido + 40% da frequência, em relação ao líder de cada indicador no período. Sem histórico, sem avaliação.</p>
             <ol id="rankingClientes" class="ranking-lista"><li>A carregar histórico…</li></ol>
         </article>
+        <article class="painel leitura-cenario"><span class="eyebrow">LEITURA DO CENÁRIO</span><h2>O que os números mostram</h2><div id="cenarioDesempenho">A carregar indicadores…</div></article>
     </section>
     </section>
 
@@ -127,22 +134,15 @@ Carregando...
 
         <h2>Nova Entrada</h2>
 
-        <input
-    type="number"
-    id="valor"
-    placeholder="Valor Recebido (€)"
->
-
-<input
-    type="text"
-    id="descricao"
-    placeholder="Descrição"
->
-
-<input type="text" id="clienteEntrada" list="clientesEntrada" placeholder="Cliente (opcional)">
-<datalist id="clientesEntrada"></datalist>
-
-<textarea id="observacaoEntrada" placeholder="Observação desta entrada (opcional)"></textarea>
+        <p class="entrada-intro">Registe o valor recebido e associe o cliente para acompanhar o desempenho.</p>
+        <div class="entrada-campos">
+            <label class="campo-entrada">Valor recebido (€)<input type="number" id="valor" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00"></label>
+            <label class="campo-entrada">Cliente (opcional)<input type="text" id="clienteEntrada" list="clientesEntrada" placeholder="Nome do cliente" autocomplete="off"></label>
+            <datalist id="clientesEntrada"></datalist>
+            <div class="avaliacao-cliente" aria-live="polite"><span>Desempenho do cliente</span><strong id="estrelasClienteEntrada">Sem avaliação</strong><small id="detalheEstrelasCliente">Escolha um cliente para consultar o período do ranking.</small></div>
+            <label class="campo-entrada campo-largo">Observações (opcional)<textarea id="observacaoEntrada" rows="3" placeholder="Serviço realizado, preferências ou informação importante…"></textarea></label>
+            <details class="descricao-extra campo-largo"><summary>Adicionar descrição da entrada (opcional)</summary><label class="campo-entrada">Descrição<input type="text" id="descricao" placeholder="Ex.: serviço realizado"></label></details>
+        </div>
 
         <button id="salvarEntrada">
 
@@ -221,7 +221,7 @@ verificarLogin();
 
 </script>
 
-<script type="module" src="js/admin.js?v=mobile-month-refresh-1"></script>
+<script type="module" src="js/admin.js?v=ranking-desempenho-2"></script>
 
 </body>
 

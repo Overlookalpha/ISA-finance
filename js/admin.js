@@ -1,3 +1,4 @@
+import { normalizarCliente, resumirPeriodo, periodoAnterior } from "./desempenho.mjs";
 // =========================================
 // ISA Finance - Admin
 // =========================================
@@ -122,7 +123,7 @@ btnSalvar.addEventListener("click", async () => {
 
     const valor = Number(txtValor.value);
 
-    const descricao = txtDescricao.value.trim();
+    const descricao = txtDescricao.value.trim() || txtClienteEntrada.value.trim() || "Entrada recebida";
     const observacao = txtObservacaoEntrada.value.trim();
     const clienteNome = txtClienteEntrada.value.trim();
 
@@ -308,7 +309,7 @@ async function carregarPainel(mostrarErro = false){
     // evita repetir a mesma consulta só para montar o histórico.
     renderizarHistorico(snap);
     atualizarRecursosPainel(totalMes, snap);
-    carregarRelatorios();
+    await carregarRelatorios();
 
     ultimoCarregamento = Date.now();
     statusAtualizacao.innerText = "Atualizado agora";
@@ -466,6 +467,8 @@ btnAtualizarPainel.addEventListener("click", () => {
 });
 
 mesReferencia.addEventListener("change", () => {
+    rankingMes.value = mesReferencia.value;
+    rankingAno.value = mesReferencia.value.slice(0,4);
     carregarPainel();
 });
 
@@ -485,6 +488,49 @@ document.addEventListener("visibilitychange", () => {
 // Recursos visuais adicionados sem interferir no fluxo financeiro existente.
 let graficoDesempenho;
 let graficoMensal;
+let movimentosDesempenho = [];
+const rankingModo = document.getElementById("rankingModo");
+const rankingMes = document.getElementById("rankingMes");
+const rankingAno = document.getElementById("rankingAno");
+rankingMes.value = mesReferencia.value;
+function escaparHTML(valor){ return String(valor).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function estrelasTexto(cliente){ return "★".repeat(cliente.estrelas) + "☆".repeat(5-cliente.estrelas); }
+function atualizarEstrelasEntrada(resumo){
+    const cliente = resumo.clientes.find(c => c.chave === normalizarCliente(txtClienteEntrada.value));
+    document.getElementById("estrelasClienteEntrada").textContent = cliente ? estrelasTexto(cliente) : "Sem avaliação";
+    document.getElementById("detalheEstrelasCliente").textContent = cliente
+        ? `${moeda(cliente.total)} recebidos · ${cliente.entradas} entrada(s) · ${rankingModo.value === "anual" ? rankingAno.value : rankingMes.value}. A nova entrada só conta após guardar.`
+        : "Sem recebimentos associados a este cliente no período selecionado.";
+}
+function atualizarRanking(){
+    const anual = rankingModo.value === "anual", periodo = anual ? rankingAno.value : rankingMes.value;
+    document.getElementById("rankingMesLabel").hidden = anual;
+    document.getElementById("rankingAnoLabel").hidden = !anual;
+    const resumo = resumirPeriodo(movimentosDesempenho, rankingModo.value, periodo);
+    const anterior = resumirPeriodo(movimentosDesempenho, rankingModo.value, periodoAnterior(rankingModo.value, periodo));
+    document.getElementById("rankingPeriodoResumo").textContent = `Top 10 · ${anual ? periodo : periodo.slice(5)+"/"+periodo.slice(0,4)}`;
+    document.getElementById("rankingClientes").innerHTML = resumo.clientes.length
+        ? resumo.clientes.slice(0,10).map((c,i)=>`<li><span>${i+1}. <strong>${escaparHTML(c.nome)}</strong><small><span class="ranking-estrelas" aria-label="${c.estrelas} de 5 estrelas">${estrelasTexto(c)}</span> · ${c.entradas} entrada(s)</small></span><b>${moeda(c.total)}</b></li>`).join("")
+        : "<li>Não há recebimentos associados a clientes neste período.</li>";
+    const notas = [];
+    notas.push(`${moeda(resumo.total)} recebidos em ${resumo.quantidade} entrada(s). Valor médio por entrada: ${moeda(resumo.ticket)}.`);
+    if(anterior.total > 0){
+        const variacao = (resumo.total/anterior.total-1)*100;
+        notas.push(`${variacao >= 0 ? "Acima" : "Abaixo"} do período anterior em ${Math.abs(variacao).toFixed(1)}%. O período atual pode estar incompleto; isto não é uma previsão.`);
+    } else notas.push("Não há recebimentos no período anterior para calcular uma comparação.");
+    const lider = resumo.clientes[0];
+    if(lider && resumo.total > 0){
+        const participacao = lider.total/resumo.total*100;
+        notas.push(`${lider.nome} representa ${participacao.toFixed(1)}% das entradas. ${participacao >= 40 ? "Considere diversificar a carteira e acompanhar a recorrência dos outros clientes." : "Acompanhe os clientes recorrentes para manter o relacionamento."}`);
+    }
+    if(resumo.quantidade > 0 && !resumo.clientes.length) notas.push("Associe os recebimentos a clientes para obter um ranking útil.");
+    const destino = document.getElementById("cenarioDesempenho"); destino.replaceChildren();
+    notas.forEach(n=>{const p=document.createElement("p");p.textContent=n;destino.appendChild(p);});
+    atualizarEstrelasEntrada(resumo);
+}
+[rankingModo,rankingMes,rankingAno].forEach(c=>c.addEventListener("change",atualizarRanking));
+txtClienteEntrada.addEventListener("input",atualizarRanking);
+
 
 function atualizarRecursosPainel(total, movimentacoes) {
     const canvas = document.getElementById("graficoDesempenho");
@@ -527,14 +573,15 @@ async function carregarRelatorios() {
     const clientes = new Map();
     clientesSnap.forEach((item) => clientes.set((item.data().nome || "").trim().toLowerCase(), item.data().nome || "Cliente"));
     const listaClientes = document.getElementById("clientesEntrada");
-    listaClientes.innerHTML = [...clientes.values()].map((nome) => `<option value="${nome}"></option>`).join("");
-    const porMes = new Map(); const porCliente = new Map();
+    listaClientes.innerHTML = [...clientes.values()].map((nome) => `<option value="${escaparHTML(nome)}"></option>`).join("");
+    const porMes = new Map();
+    movimentosDesempenho = [];
     movimentacoesSnap.forEach((item) => {
         const mov = item.data(); if (mov.tipo === "fundo" || !mov.valor || !mov.criadoEm) return;
         const data = mov.criadoEm.toDate(); const mes = `${data.getFullYear()}-${String(data.getMonth()+1).padStart(2,"0")}`;
         porMes.set(mes, (porMes.get(mes) || 0) + Number(mov.valor));
         const nome = (mov.clienteNome || clientes.get((mov.descricao || "").trim().toLowerCase()) || "").trim();
-        if (nome) porCliente.set(nome, (porCliente.get(nome) || 0) + Number(mov.valor));
+        movimentosDesempenho.push({...mov, data, clienteNome:nome});
     });
     const meses = [...porMes.keys()].sort().slice(-10);
     const canvas = document.getElementById("graficoMensal");
@@ -542,8 +589,14 @@ async function carregarRelatorios() {
         if (graficoMensal) graficoMensal.destroy();
         graficoMensal = new Chart(canvas, { type:"line", data:{labels:meses.map((m) => m.slice(5)+"/"+m.slice(0,4)),datasets:[{label:"Entradas por mês (€)",data:meses.map((m)=>porMes.get(m)),borderColor:"#38bdf8",backgroundColor:"rgba(56,189,248,.18)",fill:true,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:"#cbd5e1"},grid:{color:"#334155"}},x:{ticks:{color:"#cbd5e1"},grid:{display:false}}}} });
     }
-    const ranking = [...porCliente.entries()].sort((a,b)=>b[1]-a[1]).slice(0,10);
-    document.getElementById("rankingClientes").innerHTML = ranking.length ? ranking.map(([nome,valor],i)=>`<li><span>${i+1}. <strong>${nome}</strong></span><b>${moeda(valor)}</b></li>`).join("") : "<li>As novas entradas podem ser associadas a um cliente para formar o ranking.</li>";
+    const nomesDisponiveis = new Map(clientes);
+    movimentosDesempenho.forEach(m=>{if(m.clienteNome) nomesDisponiveis.set(normalizarCliente(m.clienteNome),m.clienteNome);});
+    listaClientes.innerHTML = [...nomesDisponiveis.values()].map(nome=>`<option value="${escaparHTML(nome)}"></option>`).join("");
+    const anos = [...new Set([String(new Date().getFullYear()), mesReferencia.value.slice(0,4), ...movimentosDesempenho.map(m=>String(m.data.getFullYear()))])].sort().reverse();
+    const anoAnterior = rankingAno.value;
+    rankingAno.replaceChildren(...anos.map(ano=>{const op=document.createElement("option");op.value=ano;op.textContent=ano;return op;}));
+    rankingAno.value = anos.includes(anoAnterior) ? anoAnterior : mesReferencia.value.slice(0,4);
+    atualizarRanking();
 }
 
 document.getElementById("btnRelatorios").addEventListener("click", () => document.getElementById("relatoriosFinanceiros").scrollIntoView({behavior:"smooth"}));
