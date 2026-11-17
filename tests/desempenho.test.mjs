@@ -67,3 +67,12 @@ for(const c of novembro.clientes) assert.equal(c.estrelas,anual.clientes.find(a=
 assert.equal(janeiro.clientes[0].estrelas,ana.estrelas);assert.equal(novembro.total,110);
 assert.ok(novembro.clientes.find(c=>c.nome==='Bia').estrelas<5);
 });
+
+import {detalharClienteAno} from '../js/desempenho.mjs';
+test('resumo anual por cliente soma centavos, separa meses e exclui futuro/outros clientes',()=>{
+const agora=new Date(2026,10,17),dados=[m('Ana',10,2026,1),m(' ana ',20,2026,11),m('Ana',100,2025,11),m('Bia',900,2026,11),m('Ana',70,2026,12),m('Ana',800,2026,11,'fundo')];
+const r=detalharClienteAno(dados,'ANA','2026',agora);assert.equal(r.total,30);assert.equal(r.quantidade,2);assert.equal(r.media,15);assert.deepEqual(r.meses.map(m=>m.total),[10,20]);
+assert.equal(detalharClienteAno(dados,'ANA','2025',agora).total,100);
+assert.equal(detalharClienteAno(dados,'Sem histórico','2026',agora).total,0);
+assert.equal(detalharClienteAno([m('',200,2026,1)],'','2026',agora).total,0);
+});

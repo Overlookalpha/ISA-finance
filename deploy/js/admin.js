@@ -1,5 +1,5 @@
 import { iniciarGestao } from "./gestao.mjs?v=estrelas-anuais-1";
-import { normalizarCliente, resumirPeriodo, periodoAnterior } from "./desempenho.mjs?v=estrelas-anuais-1";
+import { normalizarCliente, resumirPeriodo, periodoAnterior, detalharClienteAno } from "./desempenho.mjs?v=resumo-cliente-1";
 // =========================================
 // ISA Finance - Admin
 // =========================================
@@ -517,7 +517,7 @@ function atualizarRanking(){
     const anterior = resumirPeriodo(movimentosDesempenho, rankingModo.value, periodoAnterior(rankingModo.value, periodo));
     document.getElementById("rankingPeriodoResumo").textContent = `Top 10 · ${anual ? periodo : periodo.slice(5)+"/"+periodo.slice(0,4)}`;
     document.getElementById("rankingClientes").innerHTML = resumo.clientes.length
-        ? resumo.clientes.slice(0,10).map((c,i)=>`<li><span>${i+1}. <strong>${escaparHTML(c.nome)}</strong><small><span class="ranking-estrelas" aria-label="${c.estrelas} de 5 estrelas no ano ${anoAvaliacao}" title="Avaliação anual ${anoAvaliacao}: ${moeda(c.totalAnual)}, ${c.entradasAnuais} entradas">${estrelasTexto(c)}</span> · ${c.entradas} entrada(s)</small></span><b>${moeda(c.total)}</b></li>`).join("")
+        ? resumo.clientes.slice(0,10).map((c,i)=>`<li><span>${i+1}. <button type="button" class="cliente-resumo-link" data-cliente="${escaparHTML(c.nome)}" aria-label="Ver resumo anual de ${escaparHTML(c.nome)}">${escaparHTML(c.nome)}</button><small><span class="ranking-estrelas" aria-label="${c.estrelas} de 5 estrelas no ano ${anoAvaliacao}" title="Avaliação anual ${anoAvaliacao}: ${moeda(c.totalAnual)}, ${c.entradasAnuais} entradas">${estrelasTexto(c)}</span> · ${c.entradas} entrada(s)</small></span><b>${moeda(c.total)}</b></li>`).join("")
         : "<li>Não há recebimentos associados a clientes neste período.</li>";
     const notas = [];
     notas.push(`${moeda(resumo.total)} recebidos em ${resumo.quantidade} entrada(s). Valor médio por entrada: ${moeda(resumo.ticket)}.`);
@@ -624,8 +624,10 @@ document.getElementById("btnBuscarCliente").addEventListener("click", async () =
             const texto = `${dados.nome || ""} ${dados.telefone || ""} ${dados.email || ""}`.toLowerCase();
             if (texto.includes(termo)) encontrados.push(dados);
         });
+        const nomesEncontrados=new Set(encontrados.map(c=>normalizarCliente(c.nome)));
+        movimentosDesempenho.forEach(m=>{const chave=normalizarCliente(m.clienteNome);if(chave && chave.includes(normalizarCliente(termo)) && !nomesEncontrados.has(chave)){encontrados.push({nome:m.clienteNome});nomesEncontrados.add(chave);}});
         resultadoCliente.innerHTML = encontrados.length
-            ? encontrados.map((c) => `<strong>${c.nome || "Cliente sem nome"}</strong><br><span>${c.telefone || "Sem contacto"}${c.email ? " · " + c.email : ""}</span>`).join("<hr>")
+            ? encontrados.map((c) => `<button type="button" class="cliente-resumo-link" data-cliente="${escaparHTML(c.nome || "")}">${escaparHTML(c.nome || "Cliente sem nome")} · Ver resumo anual</button><br><span>${escaparHTML(c.telefone || "Sem contacto")}${c.email ? " · " + escaparHTML(c.email) : ""}</span>`).join("<hr>")
             : "Nenhum cliente encontrado.";
     } catch (erro) {
         console.error("Erro ao pesquisar clientes:", erro);
@@ -633,6 +635,44 @@ document.getElementById("btnBuscarCliente").addEventListener("click", async () =
     }
 });
 
+
+
+const dialogoCliente=document.getElementById("resumoClienteDialog");
+const seletorAnoCliente=document.getElementById("resumoClienteAno");
+let clienteResumoAtual="", pedidoResumoCliente=0;
+function renderizarResumoCliente(){
+    if(!clienteResumoAtual)return;
+    const agora=new Date(),r=detalharClienteAno(movimentosDesempenho,clienteResumoAtual,seletorAnoCliente.value,agora);
+    document.getElementById("resumoClienteTotal").textContent=moeda(r.total);
+    document.getElementById("resumoClienteCorte").textContent=`Ano ${r.ano} · até ${agora.toLocaleDateString("pt-PT")}; não inclui entradas futuras.`;
+    document.getElementById("resumoClienteMetricas").textContent=`${r.quantidade} entrada(s) · valor médio: ${moeda(r.media)}.`;
+    document.getElementById("resumoClienteStatus").textContent=r.quantidade?"Valores atualizados a partir dos registos.":"Não há entradas associadas a este cliente neste ano até à data atual.";
+    const corpo=document.getElementById("resumoClienteMeses");corpo.replaceChildren();
+    r.meses.forEach(m=>{const tr=document.createElement("tr");[new Date(r.ano,m.mes,1).toLocaleDateString("pt-PT",{month:"long"}),m.quantidade,moeda(m.total)].forEach(texto=>{const td=document.createElement("td");td.textContent=texto;tr.appendChild(td);});corpo.appendChild(tr);});
+    if(!r.meses.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=3;td.textContent="Sem recebimentos no ano.";tr.appendChild(td);corpo.appendChild(tr);}
+    const lista=document.getElementById("resumoClienteEntradas");lista.replaceChildren();
+    r.entradas.forEach(m=>{const li=document.createElement("li"),texto=document.createElement("span"),valor=document.createElement("strong");texto.textContent=m.data.toLocaleDateString("pt-PT")+(m.descricao ? " · "+m.descricao : "");valor.textContent=moeda(Number(m.valor));li.append(texto,valor);lista.appendChild(li);});
+    document.getElementById("resumoClienteConteudo").hidden=false;
+}
+async function abrirResumoCliente(nome,ano){
+    if(!normalizarCliente(nome))return;
+    const pedido=++pedidoResumoCliente;clienteResumoAtual=nome;
+    document.getElementById("resumoClienteTitulo").textContent=nome;
+    document.getElementById("resumoClienteConteudo").hidden=true;
+    document.getElementById("resumoClienteStatus").textContent="A consultar os recebimentos…";seletorAnoCliente.disabled=true;
+    if(!dialogoCliente.open)dialogoCliente.showModal();
+    try{
+        await carregarRelatorios();
+        if(pedido!==pedidoResumoCliente || !dialogoCliente.open)return;
+        const anos=[...new Set([String(new Date().getFullYear()),String(ano),...movimentosDesempenho.map(m=>String(m.data.getFullYear()))])].filter(a=>/^\d{4}$/.test(a)).sort().reverse();
+        seletorAnoCliente.replaceChildren(...anos.map(a=>{const op=document.createElement("option");op.value=a;op.textContent=a;return op;}));
+        seletorAnoCliente.value=anos.includes(String(ano))?String(ano):String(new Date().getFullYear());seletorAnoCliente.disabled=false;renderizarResumoCliente();
+    }catch(erro){if(pedido!==pedidoResumoCliente)return;console.error("Erro ao consultar resumo do cliente:",erro);document.getElementById("resumoClienteStatus").textContent="Não foi possível consultar as entradas. Feche e tente novamente.";}
+}
+document.getElementById("fecharResumoCliente").addEventListener("click",()=>dialogoCliente.close());
+dialogoCliente.addEventListener("close",()=>{pedidoResumoCliente++;clienteResumoAtual="";});
+seletorAnoCliente.addEventListener("change",renderizarResumoCliente);
+[document.getElementById("rankingClientes"),resultadoCliente].forEach(area=>area.addEventListener("click",e=>{const botao=e.target.closest("[data-cliente]");if(!botao)return;if(!normalizarCliente(botao.dataset.cliente)){resultadoCliente.textContent="O cliente precisa de um nome para associar os recebimentos.";return;}const ano=area.id==="rankingClientes" ? (rankingModo.value==="anual"?rankingAno.value:rankingMes.value.slice(0,4)) : mesReferencia.value.slice(0,4);abrirResumoCliente(botao.dataset.cliente,ano);}));
 
 const botoesAbas = document.querySelectorAll("[data-aba]");
 const areasAbas = document.querySelectorAll("[data-area]");

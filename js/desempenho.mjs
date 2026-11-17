@@ -72,3 +72,11 @@ export function analisarRetornoClientes(movimentos, referencia = new Date(), pra
 export function clientesSemRetorno(movimentos, referencia = new Date(), prazosManuais = {}) {
   return analisarRetornoClientes(movimentos, referencia, prazosManuais).filter(c=>c.dias>=c.prazo);
 }
+
+export function detalharClienteAno(movimentos, nome, ano, agora = new Date()) {
+  const chave=normalizarCliente(nome), anoNumero=Number(ano);
+  const entradas=movimentos.filter(m=>chave && m.tipo!=='fundo' && Number.isFinite(Number(m.valor)) && Number(m.valor)>0 && m.data instanceof Date && Number.isFinite(m.data.getTime()) && m.data<=agora && m.data.getFullYear()===anoNumero && normalizarCliente(m.clienteNome)===chave).sort((a,b)=>b.data-a.data);
+  const meses=new Map();let centavos=0;
+  for(const entrada of entradas){const valor=Math.round(Number(entrada.valor)*100),mes=entrada.data.getMonth();centavos+=valor;const m=meses.get(mes)||{mes,centavos:0,quantidade:0};m.centavos+=valor;m.quantidade++;meses.set(mes,m);}
+  return {nome,ano:anoNumero,total:centavos/100,quantidade:entradas.length,media:entradas.length?Math.round(centavos/entradas.length)/100:0,entradas,meses:[...meses.values()].sort((a,b)=>a.mes-b.mes).map(m=>({mes:m.mes,total:m.centavos/100,quantidade:m.quantidade}))};
+}

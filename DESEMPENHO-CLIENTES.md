@@ -26,3 +26,7 @@ Em Clientes → Clientes que não voltaram, escolha um cliente, introduza os dia
 
 ## Estrelas anuais
 As estrelas usam todas as entradas do ano selecionado, independentemente da vista mensal ou anual. O Top 10 mensal conserva os valores e a ordenação do mês; as estrelas e o detalhe do formulário usam valor e frequência anuais. Mantém-se o critério 60% valor / 40% frequência, sem misturar anos. Verificado com um cliente que recebeu pouco num mês e mais noutro.
+
+
+## Resumo anual ao clicar no cliente
+O nome no Top 10 e na pesquisa abre um diálogo com escolha do ano, total recebido até à data atual, número de entradas, média, totais mensais e detalhe de entradas. Consulta os registos novamente ao abrir. Exclui valores futuros, fundos e movimentos sem nome associado. Não altera dados e não desconta as partes/despesas do total recebido do cliente.
