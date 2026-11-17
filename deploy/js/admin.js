@@ -612,7 +612,8 @@ async function carregarRelatorios() {
     rankingAno.value = anos.includes(anoAnterior) ? anoAnterior : mesReferencia.value.slice(0,4);
     atualizarRanking();
     clientesUI.atualizar();
-    await gestao.carregar(mesReferencia.value,movimentosDesempenho,correcoesClientes);
+    // Indicadores auxiliares não devem bloquear os recebimentos nem a abertura do resumo.
+    void gestao.carregar(mesReferencia.value,movimentosDesempenho,correcoesClientes).catch(erro=>console.error("Erro nos indicadores auxiliares:",erro));
 }
 
 document.getElementById("btnRelatorios").addEventListener("click", () => document.getElementById("relatoriosFinanceiros").scrollIntoView({behavior:"smooth"}));
@@ -629,7 +630,7 @@ function renderizarResumoCliente(){
     document.getElementById("resumoClienteTotal").textContent=moeda(r.total);
     document.getElementById("resumoClienteCorte").textContent=`Ano ${r.ano} · até ${agora.toLocaleDateString("pt-PT")}; não inclui entradas futuras.`;
     document.getElementById("resumoClienteMetricas").textContent=`${r.quantidade} entrada(s) · valor médio: ${moeda(r.media)}.`;
-    document.getElementById("resumoClienteStatus").textContent=r.quantidade?"Valores atualizados a partir dos registos.":"Não há entradas associadas a este cliente neste ano até à data atual.";
+    document.getElementById("resumoClienteStatus").textContent=r.quantidade?"Valores dos recebimentos carregados no painel. Use Atualizar painel para consultar alterações recentes.":"Não há entradas associadas a este cliente neste ano até à data atual.";
     const corpo=document.getElementById("resumoClienteMeses");corpo.replaceChildren();
     r.meses.forEach(m=>{const tr=document.createElement("tr");[new Date(r.ano,m.mes,1).toLocaleDateString("pt-PT",{month:"long"}),m.quantidade,moeda(m.total)].forEach(texto=>{const td=document.createElement("td");td.textContent=texto;tr.appendChild(td);});corpo.appendChild(tr);});
     if(!r.meses.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=3;td.textContent="Sem recebimentos no ano.";tr.appendChild(td);corpo.appendChild(tr);}
@@ -642,15 +643,16 @@ async function abrirResumoCliente(nome,ano){
     const pedido=++pedidoResumoCliente;clienteResumoAtual=nome;
     document.getElementById("resumoClienteTitulo").textContent=nome;
     document.getElementById("resumoClienteConteudo").hidden=true;
-    document.getElementById("resumoClienteStatus").textContent="A consultar os recebimentos…";seletorAnoCliente.disabled=true;
+    document.getElementById("resumoClienteStatus").textContent="A preparar o resumo…";seletorAnoCliente.disabled=true;
     if(!dialogoCliente.open)dialogoCliente.showModal();
     try{
-        await carregarRelatorios();
+        // O cliente só pode ser escolhido depois de os recebimentos terem sido carregados.
+        // Reutilizar esse conjunto evita aguardar consultas alheias ao resumo.
         if(pedido!==pedidoResumoCliente || !dialogoCliente.open)return;
         const anos=[...new Set([String(new Date().getFullYear()),String(ano),...movimentosDesempenho.map(m=>String(m.data.getFullYear()))])].filter(a=>/^\d{4}$/.test(a)).sort().reverse();
         seletorAnoCliente.replaceChildren(...anos.map(a=>{const op=document.createElement("option");op.value=a;op.textContent=a;return op;}));
         seletorAnoCliente.value=anos.includes(String(ano))?String(ano):String(new Date().getFullYear());seletorAnoCliente.disabled=false;renderizarResumoCliente();
-    }catch(erro){if(pedido!==pedidoResumoCliente)return;console.error("Erro ao consultar resumo do cliente:",erro);document.getElementById("resumoClienteStatus").textContent="Não foi possível consultar as entradas. Feche e tente novamente.";}
+    }catch(erro){if(pedido!==pedidoResumoCliente)return;console.error("Erro ao consultar resumo do cliente:",erro);seletorAnoCliente.disabled=false;document.getElementById("resumoClienteStatus").textContent="Não foi possível preparar o resumo. Feche e atualize o painel antes de tentar novamente.";}
 }
 document.getElementById("fecharResumoCliente").addEventListener("click",()=>dialogoCliente.close());
 dialogoCliente.addEventListener("close",()=>{pedidoResumoCliente++;clienteResumoAtual="";});

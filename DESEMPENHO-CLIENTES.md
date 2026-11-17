@@ -36,3 +36,7 @@ O nome no Top 10 e na pesquisa abre um diálogo com escolha do ano, total recebi
 Clientes mostra todos os nomes do cadastro e dos recebimentos, com filtro de ano, estrelas anuais e total até hoje; quem não recebeu no ano continua listado sem avaliação. Nome abre o resumo.
 Editar nome sugere grafias semelhantes por distância de escrita, sem confirmar identidade automaticamente. Rever alteração apresenta o impacto; a união de nomes requer confirmação explícita. As correções são guardadas atomicamente em configuracoes/nomes-clientes e resolvidas na interface, no ranking, nas sugestões de entrada, no resumo e no retorno. Os documentos originais e valores não são reescritos. Desfazer uma correção repõe a associação aos nomes anteriores. Conflitos simultâneos de correção abortam para revisão.
 Verificações: 16 testes de cálculos e nomes; prévia local sem gravação na produção confirmou união de duas grafias e reposição, incluindo preservação da soma recebida.
+
+
+## Correção da espera ao abrir resumo
+O resumo reutiliza os recebimentos já carregados no painel, sem aguardar relatórios, despesas e prazos auxiliares. O texto informa a origem dos dados; Atualizar painel consulta alterações recentes. Indicadores auxiliares são carregados sem bloquear os relatórios. Teste de regressão confirmou abertura e seleção de ano com uma consulta de rede simulada que nunca resolve.
