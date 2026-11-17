@@ -1,5 +1,6 @@
+import {resolverNomeCliente} from "./clientes-modelo.mjs?v=clientes-lista-1";
 import { collection, doc, getDoc, getDocs, query, where, setDoc, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { progressoMeta, apurarLucro, analisarRetornoClientes, normalizarCliente } from './desempenho.mjs?v=estrelas-anuais-1';
+import { progressoMeta, apurarLucro, analisarRetornoClientes, normalizarCliente } from './desempenho.mjs?v=clientes-lista-1';
 
 export function iniciarGestao({db, auth, mesReferencia, atualizarPainel, moeda}) {
     const el = id => document.getElementById(id);
@@ -79,7 +80,7 @@ export function iniciarGestao({db, auth, mesReferencia, atualizarPainel, moeda})
     el('formPrazoRetorno').addEventListener('submit',e=>{e.preventDefault();guardarPrazoRetorno(false);});
     el('reporPrazoRetorno').addEventListener('click',()=>guardarPrazoRetorno(true));
     return {
-        async carregar(mes,movimentos) {
+        async carregar(mes,movimentos,correcoes={}) {
             const pedido=++versao;
             const [a,m]=mes.split('-').map(Number),seguinte=new Date(a,m,1),fim=`${seguinte.getFullYear()}-${String(seguinte.getMonth()+1).padStart(2,'0')}-01`;
             el('metaResumo').textContent='A carregar meta…';
@@ -104,6 +105,12 @@ export function iniciarGestao({db, auth, mesReferencia, atualizarPainel, moeda})
                 const ajuste=await getDoc(refRetorno);
                 if(pedido!==versao || mesReferencia.value!==mes)return;
                 prazosManuais=ajuste.exists() ? (ajuste.data().prazosManuais || {}) : {};
+                const adaptados={...prazosManuais};
+                for(const [nome,prazo] of Object.entries(prazosManuais)){
+                    const correta=normalizarCliente(resolverNomeCliente(nome,correcoes));
+                    if(!Object.prototype.hasOwnProperty.call(adaptados,correta))adaptados[correta]=prazo;
+                }
+                prazosManuais=adaptados;
                 historicoRetorno=analisarRetornoClientes(movimentos,new Date(),prazosManuais);
                 retornoCarregado=true;
                 const anterior=el('retornoClienteAjuste').value;

@@ -1,5 +1,7 @@
+import { iniciarClientes } from "./clientes.mjs?v=clientes-lista-1";
+import { resolverNomeCliente } from "./clientes-modelo.mjs?v=clientes-lista-1";
 import { iniciarGestao } from "./gestao.mjs?v=estrelas-anuais-1";
-import { normalizarCliente, resumirPeriodo, periodoAnterior, detalharClienteAno } from "./desempenho.mjs?v=resumo-cliente-1";
+import { normalizarCliente, resumirPeriodo, periodoAnterior, detalharClienteAno } from "./desempenho.mjs?v=clientes-lista-1";
 // =========================================
 // ISA Finance - Admin
 // =========================================
@@ -493,6 +495,7 @@ document.addEventListener("visibilitychange", () => {
 let graficoDesempenho;
 let graficoMensal;
 let movimentosDesempenho = [];
+let movimentosClientesOriginais = [], cadastrosClientes = [], correcoesClientes = {};
 const rankingModo = document.getElementById("rankingModo");
 const rankingMes = document.getElementById("rankingMes");
 const rankingAno = document.getElementById("rankingAno");
@@ -574,9 +577,12 @@ function atualizarRecursosPainel(total, movimentacoes) {
 }
 
 async function carregarRelatorios() {
-    const [movimentacoesSnap, clientesSnap] = await Promise.all([
-        getDocs(collection(db, "movimentacoes")), getDocs(collection(db, "clientes"))
+    const [movimentacoesSnap, clientesSnap, nomesSnap] = await Promise.all([
+        getDocs(collection(db, "movimentacoes")), getDocs(collection(db, "clientes")), getDoc(doc(db,"configuracoes","nomes-clientes"))
     ]);
+    cadastrosClientes = clientesSnap.docs.map(d=>({id:d.id,...d.data()}));
+    correcoesClientes = nomesSnap.exists() ? (nomesSnap.data().correcoes || {}) : {};
+    movimentosClientesOriginais = [];
     const clientes = new Map();
     clientesSnap.forEach((item) => clientes.set((item.data().nome || "").trim().toLowerCase(), item.data().nome || "Cliente"));
     const listaClientes = document.getElementById("clientesEntrada");
@@ -588,7 +594,8 @@ async function carregarRelatorios() {
         const data = mov.criadoEm.toDate(); const mes = `${data.getFullYear()}-${String(data.getMonth()+1).padStart(2,"0")}`;
         porMes.set(mes, (porMes.get(mes) || 0) + Number(mov.valor));
         const nome = (mov.clienteNome || clientes.get((mov.descricao || "").trim().toLowerCase()) || "").trim();
-        movimentosDesempenho.push({...mov, data, clienteNome:nome});
+        movimentosClientesOriginais.push({...mov,data,clienteNome:nome});
+        movimentosDesempenho.push({...mov, data, clienteNome:resolverNomeCliente(nome,correcoesClientes)});
     });
     const meses = [...porMes.keys()].sort().slice(-10);
     const canvas = document.getElementById("graficoMensal");
@@ -596,7 +603,7 @@ async function carregarRelatorios() {
         if (graficoMensal) graficoMensal.destroy();
         graficoMensal = new Chart(canvas, { type:"line", data:{labels:meses.map((m) => m.slice(5)+"/"+m.slice(0,4)),datasets:[{label:"Entradas por mês (€)",data:meses.map((m)=>porMes.get(m)),borderColor:"#8b35d2",backgroundColor:"rgba(139,53,210,.12)",fill:true,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:"#71667d"},grid:{color:"#e9e2ef"}},x:{ticks:{color:"#71667d"},grid:{display:false}}}} });
     }
-    const nomesDisponiveis = new Map(clientes);
+    const nomesDisponiveis = new Map([...clientes.values()].map(nome=>{const correto=resolverNomeCliente(nome,correcoesClientes);return [normalizarCliente(correto),correto];}));
     movimentosDesempenho.forEach(m=>{if(m.clienteNome) nomesDisponiveis.set(normalizarCliente(m.clienteNome),m.clienteNome);});
     listaClientes.innerHTML = [...nomesDisponiveis.values()].map(nome=>`<option value="${escaparHTML(nome)}"></option>`).join("");
     const anos = [...new Set([String(new Date().getFullYear()), mesReferencia.value.slice(0,4), ...movimentosDesempenho.map(m=>String(m.data.getFullYear()))])].sort().reverse();
@@ -604,38 +611,14 @@ async function carregarRelatorios() {
     rankingAno.replaceChildren(...anos.map(ano=>{const op=document.createElement("option");op.value=ano;op.textContent=ano;return op;}));
     rankingAno.value = anos.includes(anoAnterior) ? anoAnterior : mesReferencia.value.slice(0,4);
     atualizarRanking();
-    await gestao.carregar(mesReferencia.value,movimentosDesempenho);
+    clientesUI.atualizar();
+    await gestao.carregar(mesReferencia.value,movimentosDesempenho,correcoesClientes);
 }
 
 document.getElementById("btnRelatorios").addEventListener("click", () => document.getElementById("relatoriosFinanceiros").scrollIntoView({behavior:"smooth"}));
 
 const buscaCliente = document.getElementById("buscaCliente");
 const resultadoCliente = document.getElementById("resultadoCliente");
-
-document.getElementById("btnBuscarCliente").addEventListener("click", async () => {
-    const termo = buscaCliente.value.trim().toLowerCase();
-    if (!termo) return resultadoCliente.innerText = "Digite um nome, telefone ou e-mail para pesquisar.";
-    resultadoCliente.innerText = "A pesquisar clientes…";
-    try {
-        const clientes = await getDocs(collection(db, "clientes"));
-        const encontrados = [];
-        clientes.forEach((cliente) => {
-            const dados = cliente.data();
-            const texto = `${dados.nome || ""} ${dados.telefone || ""} ${dados.email || ""}`.toLowerCase();
-            if (texto.includes(termo)) encontrados.push(dados);
-        });
-        const nomesEncontrados=new Set(encontrados.map(c=>normalizarCliente(c.nome)));
-        movimentosDesempenho.forEach(m=>{const chave=normalizarCliente(m.clienteNome);if(chave && chave.includes(normalizarCliente(termo)) && !nomesEncontrados.has(chave)){encontrados.push({nome:m.clienteNome});nomesEncontrados.add(chave);}});
-        resultadoCliente.innerHTML = encontrados.length
-            ? encontrados.map((c) => `<button type="button" class="cliente-resumo-link" data-cliente="${escaparHTML(c.nome || "")}">${escaparHTML(c.nome || "Cliente sem nome")} · Ver resumo anual</button><br><span>${escaparHTML(c.telefone || "Sem contacto")}${c.email ? " · " + escaparHTML(c.email) : ""}</span>`).join("<hr>")
-            : "Nenhum cliente encontrado.";
-    } catch (erro) {
-        console.error("Erro ao pesquisar clientes:", erro);
-        resultadoCliente.innerText = "Não foi possível pesquisar agora.";
-    }
-});
-
-
 
 const dialogoCliente=document.getElementById("resumoClienteDialog");
 const seletorAnoCliente=document.getElementById("resumoClienteAno");
@@ -673,6 +656,8 @@ document.getElementById("fecharResumoCliente").addEventListener("click",()=>dial
 dialogoCliente.addEventListener("close",()=>{pedidoResumoCliente++;clienteResumoAtual="";});
 seletorAnoCliente.addEventListener("change",renderizarResumoCliente);
 [document.getElementById("rankingClientes"),resultadoCliente].forEach(area=>area.addEventListener("click",e=>{const botao=e.target.closest("[data-cliente]");if(!botao)return;if(!normalizarCliente(botao.dataset.cliente)){resultadoCliente.textContent="O cliente precisa de um nome para associar os recebimentos.";return;}const ano=area.id==="rankingClientes" ? (rankingModo.value==="anual"?rankingAno.value:rankingMes.value.slice(0,4)) : mesReferencia.value.slice(0,4);abrirResumoCliente(botao.dataset.cliente,ano);}));
+
+const clientesUI = iniciarClientes({db,auth,obterDados:()=>({cadastros:cadastrosClientes,movimentos:movimentosClientesOriginais,correcoes:correcoesClientes}),atualizarPainel:()=>carregarPainel(),abrirResumo:abrirResumoCliente,moeda});
 
 const botoesAbas = document.querySelectorAll("[data-aba]");
 const areasAbas = document.querySelectorAll("[data-area]");

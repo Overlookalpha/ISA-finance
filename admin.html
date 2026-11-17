@@ -9,7 +9,7 @@
 
 <title>ISA Finance - Administração</title>
 
-<link rel="stylesheet" href="css/style.css?v=resumo-cliente-1">
+<link rel="stylesheet" href="css/style.css?v=clientes-lista-1">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
@@ -145,12 +145,14 @@ Carregando...
     </section>
 
     <section class="painel clientes-panel area-aba" data-area="clientes">
-        <div class="section-head"><div><span class="eyebrow">CLIENTES</span><h2>Pesquisa e observações</h2></div></div>
+        <div class="section-head"><div><span class="eyebrow">CLIENTES</span><h2>Todos os clientes</h2></div></div>
+        <label class="campo-entrada cliente-ano">Ano dos recebimentos<select id="clientesAno"></select></label>
+        <p id="totalClientesLista" class="ajuda-campo" role="status">A carregar clientes…</p>
         <div class="cliente-form">
             <input id="buscaCliente" placeholder="Pesquisar por nome, telefone ou e-mail">
             <button type="button" id="btnBuscarCliente">Pesquisar</button>
         </div>
-        <div id="resultadoCliente" class="resultado-cliente">Pesquise um cliente para consultar ou guardar uma observação.</div>
+        <div id="resultadoCliente" class="resultado-cliente">A lista inclui clientes cadastrados e nomes usados nas entradas. Toque num nome para ver o resumo anual.</div>
         <div class="retorno-clientes"><span class="eyebrow">RELACIONAMENTO</span><h2>Clientes que não voltaram</h2>
             <p class="ajuda-campo">Prazo personalizado pelo histórico de cada cliente. Sem intervalos anteriores, aviso após 30 dias.</p>
             <form id="formPrazoRetorno" class="gestao-form">
@@ -254,6 +256,20 @@ Carregando...
 
 </main>
 
+<dialog id="editarNomeClienteDialog" class="resumo-cliente-dialog" aria-labelledby="editarNomeClienteTitulo">
+ <div class="resumo-cliente-cabecalho"><h2 id="editarNomeClienteTitulo">Corrigir nome do cliente</h2><button type="button" id="fecharEditarNomeCliente" aria-label="Fechar edição">✕</button></div>
+ <p id="nomeClienteOriginal" class="ajuda-campo"></p>
+ <form id="formEditarNomeCliente">
+  <label class="campo-entrada">Nome correto<input id="nomeClienteNovo" maxlength="120" required autocomplete="off"></label>
+  <div id="sugestoesNomeCliente" class="sugestoes-nome"></div>
+  <button type="button" id="reverCorrecaoCliente">Rever alteração</button>
+  <p id="previaCorrecaoCliente" class="ajuda-campo" role="status"></p>
+  <button id="confirmarNomeCliente" type="submit" hidden>Confirmar correção</button>
+ </form>
+ <details><summary>Desfazer uma correção anterior</summary><div id="desfazerNomesCliente"></div></details>
+ <p class="ajuda-campo">Só confirme que dois nomes são a mesma pessoa se tiver certeza. A correção organiza o cadastro e os recebimentos na aplicação; os lançamentos originais e valores não são apagados nem reescritos.</p>
+</dialog>
+
 <dialog id="resumoClienteDialog" class="resumo-cliente-dialog" aria-labelledby="resumoClienteTitulo">
     <div class="resumo-cliente-cabecalho"><div><span class="eyebrow">RECEBIMENTOS DO CLIENTE</span><h2 id="resumoClienteTitulo">Resumo anual</h2></div><button type="button" id="fecharResumoCliente" aria-label="Fechar resumo">✕</button></div>
     <label class="campo-entrada">Ano<select id="resumoClienteAno" disabled></select></label>
@@ -284,7 +300,7 @@ verificarLogin();
 
 </script>
 
-<script type="module" src="js/admin.js?v=resumo-cliente-1"></script>
+<script type="module" src="js/admin.js?v=clientes-lista-1"></script>
 
 </body>
 

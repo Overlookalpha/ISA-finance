@@ -30,3 +30,9 @@ As estrelas usam todas as entradas do ano selecionado, independentemente da vist
 
 ## Resumo anual ao clicar no cliente
 O nome no Top 10 e na pesquisa abre um diálogo com escolha do ano, total recebido até à data atual, número de entradas, média, totais mensais e detalhe de entradas. Consulta os registos novamente ao abrir. Exclui valores futuros, fundos e movimentos sem nome associado. Não altera dados e não desconta as partes/despesas do total recebido do cliente.
+
+
+## Lista completa e correção de grafias
+Clientes mostra todos os nomes do cadastro e dos recebimentos, com filtro de ano, estrelas anuais e total até hoje; quem não recebeu no ano continua listado sem avaliação. Nome abre o resumo.
+Editar nome sugere grafias semelhantes por distância de escrita, sem confirmar identidade automaticamente. Rever alteração apresenta o impacto; a união de nomes requer confirmação explícita. As correções são guardadas atomicamente em configuracoes/nomes-clientes e resolvidas na interface, no ranking, nas sugestões de entrada, no resumo e no retorno. Os documentos originais e valores não são reescritos. Desfazer uma correção repõe a associação aos nomes anteriores. Conflitos simultâneos de correção abortam para revisão.
+Verificações: 16 testes de cálculos e nomes; prévia local sem gravação na produção confirmou união de duas grafias e reposição, incluindo preservação da soma recebida.
