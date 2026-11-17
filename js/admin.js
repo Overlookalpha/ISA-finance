@@ -225,7 +225,8 @@ async function carregarPainel(mostrarErro = false){
 
     painelCarregando = true;
     btnAtualizarPainel.disabled = true;
-    btnAtualizarPainel.innerHTML = "🔄 Atualizando...";
+    btnAtualizarPainel.querySelector(".action-label").textContent = "Atualizando…";
+    btnAtualizarPainel.setAttribute("aria-busy","true");
     statusAtualizacao.innerText = "Buscando dados...";
 
     if (!listaEntradas.children.length) {
@@ -335,7 +336,8 @@ async function carregarPainel(mostrarErro = false){
 
         painelCarregando = false;
         btnAtualizarPainel.disabled = false;
-        btnAtualizarPainel.innerHTML = "🔄 Atualizar tela";
+        btnAtualizarPainel.querySelector(".action-label").textContent = "Atualizar";
+        btnAtualizarPainel.removeAttribute("aria-busy");
 
         if (recarregamentoPendente) {
             recarregamentoPendente = false;
@@ -556,11 +558,11 @@ function atualizarRecursosPainel(total, movimentacoes) {
             datasets: [{
                 label: "Entradas por dia (€)",
                 data: valores,
-                backgroundColor: "#38bdf8",
+                backgroundColor: "#8b35d2",
                 borderRadius: 8
             }]
         },
-        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: "#cbd5e1" }, grid: { color: "#334155" } }, x: { ticks: { color: "#cbd5e1" }, grid: { display: false } } } }
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: "#71667d" }, grid: { color: "#e9e2ef" } }, x: { ticks: { color: "#71667d" }, grid: { display: false } } } }
     });
 
     document.getElementById("insightTitulo").innerText = total ? "Entradas registadas por dia." : "Ainda não há entradas neste mês.";
@@ -589,7 +591,7 @@ async function carregarRelatorios() {
     const canvas = document.getElementById("graficoMensal");
     if (canvas && window.Chart) {
         if (graficoMensal) graficoMensal.destroy();
-        graficoMensal = new Chart(canvas, { type:"line", data:{labels:meses.map((m) => m.slice(5)+"/"+m.slice(0,4)),datasets:[{label:"Entradas por mês (€)",data:meses.map((m)=>porMes.get(m)),borderColor:"#38bdf8",backgroundColor:"rgba(56,189,248,.18)",fill:true,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:"#cbd5e1"},grid:{color:"#334155"}},x:{ticks:{color:"#cbd5e1"},grid:{display:false}}}} });
+        graficoMensal = new Chart(canvas, { type:"line", data:{labels:meses.map((m) => m.slice(5)+"/"+m.slice(0,4)),datasets:[{label:"Entradas por mês (€)",data:meses.map((m)=>porMes.get(m)),borderColor:"#8b35d2",backgroundColor:"rgba(139,53,210,.12)",fill:true,tension:.35}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:"#71667d"},grid:{color:"#e9e2ef"}},x:{ticks:{color:"#71667d"},grid:{display:false}}}} });
     }
     const nomesDisponiveis = new Map(clientes);
     movimentosDesempenho.forEach(m=>{if(m.clienteNome) nomesDisponiveis.set(normalizarCliente(m.clienteNome),m.clienteNome);});
