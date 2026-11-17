@@ -1,5 +1,5 @@
-import { iniciarGestao } from "./gestao.mjs?v=prazo-manual-1";
-import { normalizarCliente, resumirPeriodo, periodoAnterior } from "./desempenho.mjs?v=prazo-manual-1";
+import { iniciarGestao } from "./gestao.mjs?v=estrelas-anuais-1";
+import { normalizarCliente, resumirPeriodo, periodoAnterior } from "./desempenho.mjs?v=estrelas-anuais-1";
 // =========================================
 // ISA Finance - Admin
 // =========================================
@@ -499,22 +499,25 @@ const rankingAno = document.getElementById("rankingAno");
 rankingMes.value = mesReferencia.value;
 function escaparHTML(valor){ return String(valor).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function estrelasTexto(cliente){ return "★".repeat(cliente.estrelas) + "☆".repeat(5-cliente.estrelas); }
-function atualizarEstrelasEntrada(resumo){
+function atualizarEstrelasEntrada(resumo, ano){
     const cliente = resumo.clientes.find(c => c.chave === normalizarCliente(txtClienteEntrada.value));
     document.getElementById("estrelasClienteEntrada").textContent = cliente ? estrelasTexto(cliente) : "Sem avaliação";
     document.getElementById("detalheEstrelasCliente").textContent = cliente
-        ? `${moeda(cliente.total)} recebidos · ${cliente.entradas} entrada(s) · ${rankingModo.value === "anual" ? rankingAno.value : rankingMes.value}. A nova entrada só conta após guardar.`
-        : "Sem recebimentos associados a este cliente no período selecionado.";
+        ? `${moeda(cliente.total)} recebidos no ano ${ano} · ${cliente.entradas} entrada(s) anuais. A nova entrada só conta após guardar.`
+        : "Sem recebimentos associados a este cliente no ano selecionado.";
 }
 function atualizarRanking(){
     const anual = rankingModo.value === "anual", periodo = anual ? rankingAno.value : rankingMes.value;
     document.getElementById("rankingMesLabel").hidden = anual;
     document.getElementById("rankingAnoLabel").hidden = !anual;
     const resumo = resumirPeriodo(movimentosDesempenho, rankingModo.value, periodo);
+    const anoAvaliacao = periodo.slice(0,4);
+    const resumoAnual = resumirPeriodo(movimentosDesempenho,"anual",anoAvaliacao);
+    document.getElementById("criterioEstrelas").textContent = `Estrelas anuais (${anoAvaliacao}): 60% do valor recebido no ano + 40% da frequência anual, em relação aos líderes desse ano. A vista mensal não altera a avaliação. Sem histórico no ano, sem avaliação.`;
     const anterior = resumirPeriodo(movimentosDesempenho, rankingModo.value, periodoAnterior(rankingModo.value, periodo));
     document.getElementById("rankingPeriodoResumo").textContent = `Top 10 · ${anual ? periodo : periodo.slice(5)+"/"+periodo.slice(0,4)}`;
     document.getElementById("rankingClientes").innerHTML = resumo.clientes.length
-        ? resumo.clientes.slice(0,10).map((c,i)=>`<li><span>${i+1}. <strong>${escaparHTML(c.nome)}</strong><small><span class="ranking-estrelas" aria-label="${c.estrelas} de 5 estrelas">${estrelasTexto(c)}</span> · ${c.entradas} entrada(s)</small></span><b>${moeda(c.total)}</b></li>`).join("")
+        ? resumo.clientes.slice(0,10).map((c,i)=>`<li><span>${i+1}. <strong>${escaparHTML(c.nome)}</strong><small><span class="ranking-estrelas" aria-label="${c.estrelas} de 5 estrelas no ano ${anoAvaliacao}" title="Avaliação anual ${anoAvaliacao}: ${moeda(c.totalAnual)}, ${c.entradasAnuais} entradas">${estrelasTexto(c)}</span> · ${c.entradas} entrada(s)</small></span><b>${moeda(c.total)}</b></li>`).join("")
         : "<li>Não há recebimentos associados a clientes neste período.</li>";
     const notas = [];
     notas.push(`${moeda(resumo.total)} recebidos em ${resumo.quantidade} entrada(s). Valor médio por entrada: ${moeda(resumo.ticket)}.`);
@@ -530,7 +533,7 @@ function atualizarRanking(){
     if(resumo.quantidade > 0 && !resumo.clientes.length) notas.push("Associe os recebimentos a clientes para obter um ranking útil.");
     const destino = document.getElementById("cenarioDesempenho"); destino.replaceChildren();
     notas.forEach(n=>{const p=document.createElement("p");p.textContent=n;destino.appendChild(p);});
-    atualizarEstrelasEntrada(resumo);
+    atualizarEstrelasEntrada(resumoAnual, anoAvaliacao);
 }
 [rankingModo,rankingMes,rankingAno].forEach(c=>c.addEventListener("change",atualizarRanking));
 txtClienteEntrada.addEventListener("input",atualizarRanking);

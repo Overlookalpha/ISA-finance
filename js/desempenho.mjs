@@ -14,10 +14,16 @@ export function resumirPeriodo(movimentos, modo, periodo) {
     cliente.total += Number(mov.valor); cliente.entradas++; clientes.set(chave, cliente);
   }
   const lista = [...clientes.values()];
-  const maiorValor = Math.max(0, ...lista.map(c=>c.total));
-  const maiorFrequencia = Math.max(0, ...lista.map(c=>c.entradas));
+  // A vista mensal filtra apenas os totais da lista; as estrelas usam o ano completo.
+  const anoAvaliacao = periodo.slice(0,4);
+  const baseAnual = modo === "anual" ? lista : resumirPeriodo(movimentos,"anual",anoAvaliacao).clientes;
+  const porClienteAnual = new Map(baseAnual.map(c=>[c.chave,c]));
+  const maiorValor = Math.max(0, ...baseAnual.map(c=>c.total));
+  const maiorFrequencia = Math.max(0, ...baseAnual.map(c=>c.entradas));
   for (const c of lista) {
-    c.pontos = 100 * (0.6 * c.total/maiorValor + 0.4 * c.entradas/maiorFrequencia);
+    const anual = porClienteAnual.get(c.chave);
+    c.totalAnual = anual.total; c.entradasAnuais = anual.entradas; c.anoAvaliacao = anoAvaliacao;
+    c.pontos = 100 * (0.6 * c.totalAnual/maiorValor + 0.4 * c.entradasAnuais/maiorFrequencia);
     c.estrelas = Math.min(5, Math.max(1, Math.ceil((c.pontos - 1e-9)/20)));
   }
   lista.sort((a,b)=>b.total-a.total || b.entradas-a.entradas || a.nome.localeCompare(b.nome));

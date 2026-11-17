@@ -57,3 +57,13 @@ assert.equal(analisarRetornoClientes(dados,hoje,{'ana':-1})[0].prazo,30);
 assert.equal(analisarRetornoClientes(dados,hoje,{'ana':2})[0].prazo,2);
 assert.equal(clientesSemRetorno(dados,hoje,{'ana':2}).length,1);
 });
+
+test('estrelas mensais usam todo o ano e mantêm totais mensais',()=>{
+const dados=[m('Ana',10,2026,11),m('Ana',990,2026,1),m('Bia',100,2026,11),m('Bia',99999,2025,11)];
+const novembro=resumirPeriodo(dados,'mensal','2026-11'),anual=resumirPeriodo(dados,'anual','2026'),janeiro=resumirPeriodo(dados,'mensal','2026-01');
+const ana=novembro.clientes.find(c=>c.nome==='Ana');
+assert.equal(ana.total,10);assert.equal(ana.totalAnual,1000);assert.equal(ana.entradasAnuais,2);assert.equal(ana.estrelas,5);
+for(const c of novembro.clientes) assert.equal(c.estrelas,anual.clientes.find(a=>a.chave===c.chave).estrelas);
+assert.equal(janeiro.clientes[0].estrelas,ana.estrelas);assert.equal(novembro.total,110);
+assert.ok(novembro.clientes.find(c=>c.nome==='Bia').estrelas<5);
+});

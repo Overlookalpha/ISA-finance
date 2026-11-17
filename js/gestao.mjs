@@ -1,5 +1,5 @@
 import { collection, doc, getDoc, getDocs, query, where, setDoc, writeBatch, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-import { progressoMeta, apurarLucro, analisarRetornoClientes, normalizarCliente } from './desempenho.mjs?v=prazo-manual-1';
+import { progressoMeta, apurarLucro, analisarRetornoClientes, normalizarCliente } from './desempenho.mjs?v=estrelas-anuais-1';
 
 export function iniciarGestao({db, auth, mesReferencia, atualizarPainel, moeda}) {
     const el = id => document.getElementById(id);

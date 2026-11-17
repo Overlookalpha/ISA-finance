@@ -22,3 +22,7 @@ Prévia visual conferida com dados fictícios, sem gravações no banco.
 
 ## Prazo manual por cliente
 Em Clientes → Clientes que não voltaram, escolha um cliente, introduza os dias e guarde. O ajuste é persistido em configuracoes/retorno-clientes, por nome normalizado, sem mudar recebimentos nem o histórico. Vazio ou Usar automático repõe o ciclo habitual calculado ou os 30 dias padrão. A seleção inclui também clientes que ainda não atingiram o prazo. Cálculo e gravação foram verificados em prévia isolada, sem alterar clientes reais.
+
+
+## Estrelas anuais
+As estrelas usam todas as entradas do ano selecionado, independentemente da vista mensal ou anual. O Top 10 mensal conserva os valores e a ordenação do mês; as estrelas e o detalhe do formulário usam valor e frequência anuais. Mantém-se o critério 60% valor / 40% frequência, sem misturar anos. Verificado com um cliente que recebeu pouco num mês e mais noutro.
